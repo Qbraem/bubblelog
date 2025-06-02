@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+import { getFirestore, collection, addDoc, query, orderBy, getDocs, doc, setDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCX7hc6IofjuJWUT2M11GkYRnD-XRfwmjA",
@@ -138,9 +138,13 @@ const historyList = document.getElementById('history-list');
 const detailView = document.getElementById('detail-view');
 const detailContent = document.getElementById('detail-content');
 const filterDate = document.getElementById('filter-date');
-const aiAdviceButton = document.getElementById('ai-advice-button');
 const aiAdviceBox = document.getElementById('ai-advice-box');
 const aiAdviceText = document.getElementById('ai-advice-text');
+const aiStatusArrow = document.getElementById('ai-status-arrow');
+const aiStatusIcon = document.getElementById('ai-status-icon');
+
+let chartPh = null;
+let chartCo2 = null;
 
 dataForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -165,7 +169,8 @@ dataForm.addEventListener('submit', async (e) => {
 
     document.getElementById('confirmation').classList.remove('hidden');
     resultDiv.textContent = '';
-    aiAdvice.textContent = generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2).text;
+    // AI rapport meteen updaten:
+    showAIReport(lastMeasurement);
     loadData(user.uid);
   } catch (err) {
     alert('Error saving data: ' + err.message);
@@ -174,7 +179,7 @@ dataForm.addEventListener('submit', async (e) => {
 
 function generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2) {
   const advice = [];
-  let maxSeverity = 0; // 0=goed, 1=waarschuwing, 2=kritiek
+  let maxSeverity = 0;
 
   function checkSeverity(cond, warningMsg, criticalMsg) {
     if (!cond) return;
@@ -249,16 +254,20 @@ async function loadData(uid) {
     const dateStr = date.toISOString().split('T')[0];
     if (filter && filter !== dateStr) return;
 
-    if (index === 0) firstMeasurement = d;  // Neem eerste (meest recente) meting
+    if (index === 0) firstMeasurement = d;
 
     labels.push(date.toLocaleDateString());
     phData.push(d.ph);
     co2Data.push(d.co2);
 
     const li = document.createElement('li');
-    li.className = "py-2 cursor-pointer hover:bg-blue-100 rounded px-2";
-    li.textContent = date.toLocaleString();
-    li.onclick = () => {
+    li.className = "flex justify-between items-center py-2 hover:bg-blue-100 rounded px-2";
+
+    // Datum tekst
+    const textSpan = document.createElement('span');
+    textSpan.textContent = date.toLocaleString();
+    textSpan.className = "cursor-pointer flex-grow";
+    textSpan.onclick = () => {
       detailContent.innerHTML = `
         <p><strong>pH:</strong> ${d.ph}</p>
         <p><strong>GH:</strong> ${d.gh}</p>
@@ -271,85 +280,115 @@ async function loadData(uid) {
       `;
       detailView.classList.remove('hidden');
     };
+
+    // Verwijder knop
+    const delBtn = document.createElement('span');
+    delBtn.className = "delete-btn";
+    delBtn.title = "Delete this measurement";
+    delBtn.textContent = "✖";
+    delBtn.onclick = async (ev) => {
+      ev.stopPropagation();
+      if (confirm("Are you sure you want to delete this measurement?")) {
+        try {
+          await deleteDoc(doc(db, `users/${uid}/measurements`, doc.id));
+          // herlaad data na verwijderen
+          loadData(uid);
+        } catch (error) {
+          alert("Failed to delete: " + error.message);
+        }
+      }
+    };
+
+    li.appendChild(textSpan);
+    li.appendChild(delBtn);
     historyList.appendChild(li);
   });
 
   if (firstMeasurement) {
     lastMeasurement = firstMeasurement;
+    showAIReport(lastMeasurement);
+  } else {
+    // Geen data, toon melding en reset AI box
+    lastMeasurement = null;
+    aiAdviceBox.classList.remove('hidden');
+    aiAdviceBox.style.backgroundColor = '#e0e0e0';
+    aiAdviceText.textContent = "Add your first measurements to get an AI advice!";
+    aiStatusArrow.style.left = '50%';
+    aiStatusIcon.textContent = 'ℹ️';
+    aiStatusIcon.className = 'text-gray-700 my-3 text-4xl';
   }
 
-  renderChart('chart', labels, phData, 'pH', 'rgba(59, 130, 246, 1)');
-  renderChart('chart-co2', labels, co2Data, 'CO₂ (mg/L)', 'rgba(34, 197, 94, 1)');
+  updateOrCreateChart('chart', labels, phData, 'pH', 'rgba(59, 130, 246, 1)');
+  updateOrCreateChart('chart-co2', labels, co2Data, 'CO₂ (mg/L)', 'rgba(34, 197, 94, 1)');
 }
 
-function renderChart(canvasId, labels, data, label, color) {
+function updateOrCreateChart(canvasId, labels, data, label, color) {
   const ctx = document.getElementById(canvasId).getContext('2d');
-  new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        label,
-        data,
-        borderColor: color,
-        backgroundColor: color + '33',
-        tension: 0.4
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        y: { beginAtZero: true }
+  let chartInstance = (canvasId === 'chart') ? chartPh : chartCo2;
+
+  if (chartInstance) {
+    chartInstance.data.labels = labels;
+    chartInstance.data.datasets[0].data = data;
+    chartInstance.update();
+  } else {
+    chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label,
+          data,
+          borderColor: color,
+          backgroundColor: color + '33',
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true }
+        }
       }
-    }
-  });
+    });
+    if (canvasId === 'chart') chartPh = chartInstance;
+    else chartCo2 = chartInstance;
+  }
 }
 
-filterDate.addEventListener('change', () => {
-  const user = auth.currentUser;
-  if (user) loadData(user.uid);
-});
-
-aiAdviceButton.addEventListener('click', () => {
-  if (!lastMeasurement) {
-    alert("No measurement data available for AI advice.");
-    return;
-  }
-
-  const { ph, gh, kh, chlorine, nitrite, nitrate, co2 } = lastMeasurement;
+function showAIReport(measurement) {
+  const { ph, gh, kh, chlorine, nitrite, nitrate, co2 } = measurement;
   const result = generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2);
 
-  // Kleur & meter positie bepalen
   let bgColor, icon, iconColor, arrowPos;
 
   if (result.severity === 0) {
-    bgColor = '#d1fae5';        // licht groen achtergrond box
-    icon = '✅';                // groen checkmark
+    bgColor = '#d1fae5';
+    icon = '✅';
     iconColor = 'text-green-600';
-    arrowPos = 10;              // 10% van links = groen kant
+    arrowPos = 10;
   } else if (result.severity === 1) {
-    bgColor = '#fef3c7';        // licht oranje
-    icon = '⚠️';                // waarschuwing
+    bgColor = '#fef3c7';
+    icon = '⚠️';
     iconColor = 'text-yellow-500';
-    arrowPos = 50;              // 50% = midden/oranje
+    arrowPos = 50;
   } else {
-    bgColor = '#fee2e2';        // licht rood
-    icon = '❌';                // rood kruis
+    bgColor = '#fee2e2';
+    icon = '❌';
     iconColor = 'text-red-600';
-    arrowPos = 90;              // 90% = rood kant
+    arrowPos = 90;
   }
 
   aiAdviceBox.classList.remove('hidden');
   aiAdviceBox.style.backgroundColor = bgColor;
   aiAdviceText.textContent = result.text;
 
-  // Update pijl positie
-  const arrow = document.getElementById('ai-status-arrow');
-  arrow.style.left = arrowPos + '%';
+  aiStatusArrow.style.left = arrowPos + '%';
+  aiStatusIcon.textContent = icon;
+  aiStatusIcon.className = iconColor + ' my-3 text-4xl';
+}
 
-  // Update icoon
-  const iconDiv = document.getElementById('ai-status-icon');
-  iconDiv.textContent = icon;
-  iconDiv.className = iconColor + ' my-3 text-4xl';
+filterDate.addEventListener('change', () => {
+  const user = auth.currentUser;
+  if (user) loadData(user.uid);
 });
