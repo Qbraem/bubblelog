@@ -375,7 +375,6 @@ function updateOrCreateChart(canvasId, labels, data, label, color) {
 
 
 function showAIReport(measurement) {
-  if (!measurement) return;
   const { ph, gh, kh, chlorine, nitrite, nitrate, co2 } = measurement;
   const { text, severity } = generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2);
 
