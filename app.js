@@ -30,7 +30,7 @@ const extraRegisterFields = document.getElementById('extra-register-fields');
 
 let isRegister = false;
 let currentUserData = null;
-let lastMeasurement = null; // voor AI advies
+let lastMeasurement = null;
 
 toggleLink.addEventListener('click', () => {
   isRegister = !isRegister;
@@ -273,7 +273,6 @@ aiAdviceButton.addEventListener('click', () => {
   let bgColor = '#d1fae5';
   let advice = "✅ Water quality looks good!";
 
-  // Conditions for advice and color coding
   if (
     ph < 6.5 || ph > 7.5 ||
     gh < 4 || kh < 3
