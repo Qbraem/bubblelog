@@ -1,114 +1,133 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
-// Firebase imports
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js";
-
-// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyCX7hc6IofjuJWUT2M11GkYRnD-XRfwmjA",
   authDomain: "bubblelog-2933c.firebaseapp.com",
   projectId: "bubblelog-2933c",
   storageBucket: "bubblelog-2933c.appspot.com",
   messagingSenderId: "81946623882",
-  appId: "1:81946623882:web:4951374508e62697771273",
-  measurementId: "G-2ZKKPC8T6M"
+  appId: "1:81946623882:web:4951374508e62697771273"
 };
 
-// Init Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
 
-// Elements
-const authContainer = document.getElementById("auth-container");
-const dashboard = document.getElementById("dashboard");
-const authForm = document.getElementById("auth-form");
-const toggleLink = document.getElementById("toggle-link");
-const logoutButton = document.getElementById("logout-button");
-const googleButton = document.getElementById("google-signin");
+const authContainer = document.getElementById('auth-container');
+const dashboard = document.getElementById('dashboard');
+const authForm = document.getElementById('auth-form');
+const toggleLink = document.getElementById('toggle-link');
+const authSubmit = document.getElementById('auth-submit');
+const logoutButton = document.getElementById('logout-button');
+const googleSignin = document.getElementById('google-signin');
 
 let isRegister = false;
 
-authForm.addEventListener("submit", async (e) => {
+toggleLink.addEventListener('click', () => {
+  isRegister = !isRegister;
+  authSubmit.textContent = isRegister ? 'Register' : 'Login';
+  toggleLink.textContent = isRegister ? 'Already have an account? Login' : "Don't have an account? Register";
+});
+
+authForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const email = authForm.email.value;
   const password = authForm.password.value;
-  if (isRegister) {
-    await createUserWithEmailAndPassword(auth, email, password);
-  } else {
-    await signInWithEmailAndPassword(auth, email, password);
+
+  try {
+    if (isRegister) {
+      await createUserWithEmailAndPassword(auth, email, password);
+    } else {
+      await signInWithEmailAndPassword(auth, email, password);
+    }
+  } catch (error) {
+    alert(error.message);
   }
 });
 
-toggleLink.addEventListener("click", () => {
-  isRegister = !isRegister;
-  toggleLink.innerText = isRegister ? "Already have an account? Login" : "Don't have an account? Register";
+googleSignin.addEventListener('click', async () => {
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (error) {
+    alert(error.message);
+  }
 });
 
-googleButton.addEventListener("click", async () => {
-  const provider = new GoogleAuthProvider();
-  await signInWithPopup(auth, provider);
+logoutButton.addEventListener('click', async () => {
+  await signOut(auth);
 });
-
-logoutButton.addEventListener("click", () => signOut(auth));
 
 onAuthStateChanged(auth, user => {
   if (user) {
-    authContainer.style.display = "none";
-    dashboard.classList.remove("hidden");
-    loadChart(user.uid);
+    authContainer.classList.add('hidden');
+    dashboard.classList.remove('hidden');
+    loadData(user.uid);
   } else {
-    authContainer.style.display = "block";
-    dashboard.classList.add("hidden");
+    authContainer.classList.remove('hidden');
+    dashboard.classList.add('hidden');
   }
 });
 
-// Form handling
-const dataForm = document.getElementById("data-form");
-dataForm.addEventListener("submit", async (e) => {
+const dataForm = document.getElementById('data-form');
+const resultDiv = document.getElementById('result');
+
+dataForm.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const uid = auth.currentUser.uid;
-  const ph = parseFloat(document.getElementById("ph").value);
-  const gh = parseFloat(document.getElementById("gh").value);
-  const kh = parseFloat(document.getElementById("kh").value);
-  const chlorine = parseFloat(document.getElementById("chlorine").value);
-  const nitrite = parseFloat(document.getElementById("nitrite").value);
-  const nitrate = parseFloat(document.getElementById("nitrate").value);
-  const co2 = 3 * kh * Math.pow(10, (7 - ph));
+  const user = auth.currentUser;
+  if (!user) return;
 
-  await addDoc(collection(db, "users", uid, "logs"), {
-    ph, gh, kh, chlorine, nitrite, nitrate, co2, date: new Date()
-  });
+  const ph = parseFloat(document.getElementById('ph').value);
+  const gh = parseFloat(document.getElementById('gh').value);
+  const kh = parseFloat(document.getElementById('kh').value);
+  const chlorine = parseFloat(document.getElementById('chlorine').value);
+  const nitrite = parseFloat(document.getElementById('nitrite').value);
+  const nitrate = parseFloat(document.getElementById('nitrate').value);
 
-  document.getElementById("result").innerText = `CO₂ level: ${co2.toFixed(1)} mg/L`;
-  loadChart(uid);
+  const co2 = Math.round(3 * kh * Math.pow(10, (7 - ph)));
+
+  try {
+    await addDoc(collection(db, 'measurements'), {
+      userId: user.uid,
+      timestamp: new Date(),
+      ph, gh, kh, chlorine, nitrite, nitrate, co2
+    });
+    resultDiv.textContent = `Saved! Estimated CO₂: ${co2} mg/L`;
+    resultDiv.classList.remove('text-red-500');
+    resultDiv.classList.add('text-green-600');
+  } catch (err) {
+    resultDiv.textContent = 'Error saving data.';
+    resultDiv.classList.remove('text-green-600');
+    resultDiv.classList.add('text-red-500');
+  }
 });
 
-async function loadChart(uid) {
-  const q = query(collection(db, "users", uid, "logs"), orderBy("date", "desc"));
+async function loadData(uid) {
+  const q = query(collection(db, 'measurements'), where('userId', '==', uid));
   const querySnapshot = await getDocs(q);
   const labels = [];
-  const values = [];
+  const phData = [];
+
   querySnapshot.forEach(doc => {
-    const data = doc.data();
-    const d = new Date(data.date.seconds * 1000);
-    labels.unshift(d.toLocaleDateString());
-    values.unshift(data.co2.toFixed(1));
+    const d = doc.data();
+    const date = new Date(d.timestamp.seconds * 1000);
+    labels.push(date.toLocaleDateString());
+    phData.push(d.ph);
   });
 
-  const ctx = document.getElementById("chart").getContext("2d");
+  const ctx = document.getElementById('chart').getContext('2d');
   new Chart(ctx, {
-    type: "line",
+    type: 'line',
     data: {
       labels,
       datasets: [{
-        label: "CO₂ (mg/L)",
-        data: values,
-        borderColor: "rgba(59,130,246,1)",
-        backgroundColor: "rgba(59,130,246,0.1)",
-        fill: true,
-        tension: 0.3
+        label: 'pH',
+        data: phData,
+        borderColor: 'rgba(59, 130, 246, 1)',
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        tension: 0.4
       }]
     }
   });
