@@ -169,7 +169,6 @@ dataForm.addEventListener('submit', async (e) => {
 
     document.getElementById('confirmation').classList.remove('hidden');
     resultDiv.textContent = '';
-    // AI rapport meteen updaten:
     showAIReport(lastMeasurement);
     loadData(user.uid);
   } catch (err) {
@@ -248,8 +247,9 @@ async function loadData(uid) {
 
   let firstMeasurement = null;
 
-  querySnapshot.forEach((doc, index) => {
-    const d = doc.data();
+  querySnapshot.forEach((docSnapshot, index) => {
+    const d = docSnapshot.data();
+    const docId = docSnapshot.id;
     const date = d.timestamp.toDate ? d.timestamp.toDate() : new Date(d.timestamp);
     const dateStr = date.toISOString().split('T')[0];
     if (filter && filter !== dateStr) return;
@@ -263,7 +263,6 @@ async function loadData(uid) {
     const li = document.createElement('li');
     li.className = "flex justify-between items-center py-2 hover:bg-blue-100 rounded px-2";
 
-    // Datum tekst
     const textSpan = document.createElement('span');
     textSpan.textContent = date.toLocaleString();
     textSpan.className = "cursor-pointer flex-grow";
@@ -281,7 +280,6 @@ async function loadData(uid) {
       detailView.classList.remove('hidden');
     };
 
-    // Verwijder knop
     const delBtn = document.createElement('span');
     delBtn.className = "delete-btn";
     delBtn.title = "Delete this measurement";
@@ -290,8 +288,7 @@ async function loadData(uid) {
       ev.stopPropagation();
       if (confirm("Are you sure you want to delete this measurement?")) {
         try {
-          await deleteDoc(doc(db, `users/${uid}/measurements`, doc.id));
-          // herlaad data na verwijderen
+          await deleteDoc(doc(db, `users/${uid}/measurements`, docId));
           loadData(uid);
         } catch (error) {
           alert("Failed to delete: " + error.message);
@@ -308,7 +305,6 @@ async function loadData(uid) {
     lastMeasurement = firstMeasurement;
     showAIReport(lastMeasurement);
   } else {
-    // Geen data, toon melding en reset AI box
     lastMeasurement = null;
     aiAdviceBox.classList.remove('hidden');
     aiAdviceBox.style.backgroundColor = '#e0e0e0';
