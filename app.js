@@ -255,62 +255,27 @@ function generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2) {
   return { text: advice.join(" "), severity: maxSeverity };
 }
 
-
 async function loadData(uid) {
   historyList.innerHTML = '';
   const q = query(collection(db, `users/${uid}/measurements`), orderBy('timestamp', 'desc'));
   const querySnapshot = await getDocs(q);
 
-  // Build an array of docs
-  const docs = [];
-  querySnapshot.forEach(docSnapshot => {
-    docs.push(docSnapshot);
-  });
-
-  const filter = filterDate.value;
-  const filteredDocs = docs.filter(docSnapshot => {
-    const d = docSnapshot.data();
-    const date = d.timestamp.toDate ? d.timestamp.toDate() : new Date(d.timestamp);
-    const dateStr = date.toISOString().split('T')[0];
-    return !filter || filter === dateStr;
-  });
-
-  if (filteredDocs.length === 0) {
-    lastMeasurement = null;
-    aiAdviceBox.classList.remove('disabled');
-    aiAdviceBox.style.backgroundColor = '#e0e0e0';
-    aiAdviceBox.style.pointerEvents = 'none';
-    aiAdviceText.textContent = "No data available.";
-    aiStatusArrow.style.display = 'none';
-    aiStatusIcon.textContent = '⏳';
-    aiStatusIcon.className = 'text-gray-500 my-3 text-4xl';
-    updateOrCreateChart('chart', [], [], 'pH', 'rgba(59, 130, 246, 1)');
-    updateOrCreateChart('chart-co2', [], [], 'CO₂ (mg/L)', 'rgba(34, 197, 94, 1)');
-    return;
-  }
-
-  // Get first measurement
-  const firstSnapshot = filteredDocs[0];
-  const firstData = firstSnapshot.data();
-  const date0 = firstData.timestamp.toDate();
-  lastMeasurement = {
-    ph: firstData.ph,
-    gh: firstData.gh,
-    kh: firstData.kh,
-    chlorine: firstData.chlorine,
-    nitrite: firstData.nitrite,
-    nitrate: firstData.nitrate,
-    co2: firstData.co2
-  };
-
-  // Populate history and chart data
   const labels = [];
   const phData = [];
   const co2Data = [];
+  const filter = filterDate.value;
 
-  filteredDocs.forEach(docSnapshot => {
+  let firstMeasurement = null;
+
+  querySnapshot.forEach((docSnapshot, index) => {
     const d = docSnapshot.data();
-    const date = d.timestamp.toDate();
+    const docId = docSnapshot.id;
+    const date = d.timestamp.toDate ? d.timestamp.toDate() : new Date(d.timestamp);
+    const dateStr = date.toISOString().split('T')[0];
+    if (filter && filter !== dateStr) return;
+
+    if (index === 0) firstMeasurement = d;
+
     labels.push(date.toLocaleDateString());
     phData.push(d.ph);
     co2Data.push(d.co2);
@@ -343,7 +308,7 @@ async function loadData(uid) {
       ev.stopPropagation();
       if (confirm("Are you sure you want to delete this measurement?")) {
         try {
-          await deleteDoc(doc(db, `users/${uid}/measurements`, docSnapshot.id));
+          await deleteDoc(doc(db, `users/${uid}/measurements`, docId));
           loadData(uid);
         } catch (error) {
           alert("Failed to delete: " + error.message);
@@ -356,14 +321,56 @@ async function loadData(uid) {
     historyList.appendChild(li);
   });
 
-  // Update charts
+  if (firstMeasurement) {
+    lastMeasurement = firstMeasurement;
+    showAIReport(firstMeasurement);
+    showAIReport(lastMeasurement);
+  } else {
+    lastMeasurement = null;
+    aiAdviceBox.classList.remove('disabled');
+    aiAdviceBox.style.backgroundColor = '#e0e0e0';
+    aiAdviceText.textContent = "This feature will be available in a future version.";
+    aiStatusArrow.style.display = 'none';
+    aiStatusIcon.textContent = '⏳';
+    aiStatusIcon.className = 'text-gray-500 my-3 text-4xl';
+  }
+
   updateOrCreateChart('chart', labels, phData, 'pH', 'rgba(59, 130, 246, 1)');
   updateOrCreateChart('chart-co2', labels, co2Data, 'CO₂ (mg/L)', 'rgba(34, 197, 94, 1)');
-
-  // Show AI advice based on first measurement
-  showAIReport(lastMeasurement);
 }
 
+function updateOrCreateChart(canvasId, labels, data, label, color) {
+  const ctx = document.getElementById(canvasId).getContext('2d');
+  let chartInstance = (canvasId === 'chart') ? chartPh : chartCo2;
+
+  if (chartInstance) {
+    chartInstance.data.labels = labels;
+    chartInstance.data.datasets[0].data = data;
+    chartInstance.update();
+  } else {
+    chartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          label,
+          data,
+          borderColor: color,
+          backgroundColor: color + '33',
+          tension: 0.4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          y: { beginAtZero: true }
+        }
+      }
+    });
+    if (canvasId === 'chart') chartPh = chartInstance;
+    else chartCo2 = chartInstance;
+  }
 }
 
 
@@ -392,4 +399,14 @@ function showAIReport(measurement) {
 filterDate.addEventListener('change', () => {
   const user = auth.currentUser;
   if (user) loadData(user.uid);
+});
+
+
+// Check History button functionality
+const checkHistoryBtn = document.getElementById('check-history-btn');
+checkHistoryBtn.addEventListener('click', () => {
+  const user = auth.currentUser;
+  if (user) {
+    loadData(user.uid);
+  }
 });
