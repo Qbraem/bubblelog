@@ -21,7 +21,7 @@ const authForm = document.getElementById('auth-form');
 const toggleLink = document.getElementById('toggle-link');
 const authSubmit = document.getElementById('auth-submit');
 const logoutButton = document.getElementById('logout-button');
-const profileSection = document.getElementById('profile-section');
+const profileContainer = document.getElementById('profile-container');
 const profileToggle = document.getElementById('profile-toggle');
 const profileDropdown = document.getElementById('profile-dropdown');
 const profileUsername = document.getElementById('profile-username');
@@ -98,15 +98,22 @@ profileToggle.addEventListener('click', () => {
   profileToggle.setAttribute('aria-expanded', !isHidden);
 });
 
-contactDeveloper.addEventListener('click', () => {
-  window.location.href = "mailto:braem@live.be";
+// Sluit dropdown als gebruiker buiten klikt
+document.addEventListener('click', (event) => {
+  if (!profileContainer.contains(event.target)) {
+    if (!profileDropdown.classList.contains('hidden')) {
+      profileDropdown.classList.add('hidden');
+      document.getElementById('profile-arrow').style.transform = 'rotate(0deg)';
+      profileToggle.setAttribute('aria-expanded', false);
+    }
+  }
 });
 
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     authContainer.classList.add('hidden');
     dashboard.classList.remove('hidden');
-    profileSection.classList.remove('hidden');
+    profileContainer.classList.remove('hidden');
 
     try {
       const profileDoc = await getDocs(query(collection(db, `users/${user.uid}/profile`)));
@@ -125,7 +132,7 @@ onAuthStateChanged(auth, async (user) => {
   } else {
     authContainer.classList.remove('hidden');
     dashboard.classList.add('hidden');
-    profileSection.classList.add('hidden');
+    profileContainer.classList.add('hidden');
     currentUserData = null;
     lastMeasurement = null;
   }
@@ -133,7 +140,6 @@ onAuthStateChanged(auth, async (user) => {
 
 const dataForm = document.getElementById('data-form');
 const resultDiv = document.getElementById('result');
-const aiAdvice = document.getElementById('ai-advice');
 const historyList = document.getElementById('history-list');
 const detailView = document.getElementById('detail-view');
 const detailContent = document.getElementById('detail-content');
