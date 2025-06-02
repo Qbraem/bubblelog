@@ -188,7 +188,9 @@ dataForm.addEventListener('submit', async (e) => {
       ph, gh, kh, chlorine, nitrite, nitrate, co2
     });
 
-    document.getElementById('confirmation').classList.remove('hidden');
+    // Removed confirmation popup to fix error
+    // document.getElementById('confirmation').classList.remove('hidden');
+
     resultDiv.textContent = '';
     showAIReport(lastMeasurement);
     loadData(user.uid);
