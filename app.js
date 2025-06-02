@@ -164,7 +164,7 @@ dataForm.addEventListener('submit', async (e) => {
 
     document.getElementById('confirmation').classList.remove('hidden');
     resultDiv.textContent = '';
-    aiAdvice.textContent = generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2);
+    aiAdvice.textContent = generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2).text;
     loadData(user.uid);
   } catch (err) {
     alert('Error saving data: ' + err.message);
@@ -173,20 +173,61 @@ dataForm.addEventListener('submit', async (e) => {
 
 function generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2) {
   const advice = [];
-  if (ph < 6.5) advice.push("pH is a bit low, consider buffering.");
-  else if (ph > 7.5) advice.push("pH is high, watch for stress.");
+  let maxSeverity = 0; // 0=goed, 1=waarschuwing, 2=kritiek
 
-  if (gh < 4) advice.push("GH is low, may affect fish health.");
-  if (kh < 3) advice.push("KH is low, water hardness might fluctuate.");
+  function checkSeverity(cond, warningMsg, criticalMsg) {
+    if (!cond) return;
+    if (criticalMsg) {
+      maxSeverity = Math.max(maxSeverity, 2);
+      advice.push(criticalMsg);
+    } else if (warningMsg) {
+      maxSeverity = Math.max(maxSeverity, 1);
+      advice.push(warningMsg);
+    }
+  }
 
-  if (chlorine > 0) advice.push("Chlorine detected! Use dechlorinator.");
-  if (nitrite > 0.5) advice.push("Nitrite is elevated! Partial water change recommended.");
-  if (nitrate > 40) advice.push("Nitrate is high! Reduce feeding or clean tank.");
+  if (isNaN(ph)) advice.push("pH value missing");
+  else {
+    checkSeverity(ph < 6 || ph > 8, "pH is slightly out of range (6-8).", "pH is critically out of range!");
+  }
 
-  if (co2 > 30) advice.push("CO₂ is high, improve aeration.");
-  if (co2 < 5) advice.push("CO₂ is very low, may limit plant growth.");
+  if (isNaN(gh)) advice.push("GH value missing");
+  else {
+    checkSeverity(gh < 3, "GH is low, monitor fish health.");
+  }
 
-  return advice.length ? advice.join(" ") : "✅ Water quality looks good!";
+  if (isNaN(kh)) advice.push("KH value missing");
+  else {
+    checkSeverity(kh < 3, "KH is low, may cause pH swings.");
+  }
+
+  if (!isNaN(chlorine) && chlorine > 0) {
+    maxSeverity = 2;
+    advice.push("Chlorine detected! Use dechlorinator immediately.");
+  }
+  if (!isNaN(nitrite) && nitrite > 0.3) {
+    maxSeverity = 2;
+    advice.push("Nitrite levels are high! Partial water change recommended.");
+  }
+  if (!isNaN(nitrate) && nitrate > 40) {
+    maxSeverity = 1;
+    advice.push("Nitrate is elevated, consider cleaning or less feeding.");
+  }
+  if (!isNaN(co2)) {
+    if (co2 > 30) {
+      maxSeverity = Math.max(maxSeverity, 2);
+      advice.push("CO₂ is too high, aerate water.");
+    } else if (co2 < 5) {
+      maxSeverity = Math.max(maxSeverity, 1);
+      advice.push("CO₂ is low, plants may suffer.");
+    }
+  }
+
+  if (advice.length === 0) {
+    advice.push("✅ Water quality looks good!");
+  }
+
+  return { text: advice.join(" "), severity: maxSeverity };
 }
 
 async function loadData(uid) {
@@ -268,29 +309,14 @@ aiAdviceButton.addEventListener('click', () => {
   }
 
   const { ph, gh, kh, chlorine, nitrite, nitrate, co2 } = lastMeasurement;
+  const result = generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2);
 
-  let color = 'green';
-  let bgColor = '#d1fae5';
-  let advice = "✅ Water quality looks good!";
-
-  if (
-    ph < 6.5 || ph > 7.5 ||
-    gh < 4 || kh < 3
-  ) {
-    color = 'orange';
-    bgColor = '#fef3c7';
-    advice = "⚠️ Some parameters are out of ideal range. Monitor carefully.";
-  }
-
-  if (
-    chlorine > 0 || nitrite > 0.5 || nitrate > 40 || co2 > 30
-  ) {
-    color = 'red';
-    bgColor = '#fee2e2';
-    advice = "❌ Critical levels detected! Immediate action recommended.";
-  }
+  let bgColor;
+  if (result.severity === 0) bgColor = '#d1fae5';        // groen
+  else if (result.severity === 1) bgColor = '#fef3c7';   // oranje
+  else bgColor = '#fee2e2';                              // rood
 
   aiAdviceBox.classList.remove('hidden');
   aiAdviceBox.style.backgroundColor = bgColor;
-  aiAdviceText.textContent = advice;
+  aiAdviceText.textContent = result.text;
 });
