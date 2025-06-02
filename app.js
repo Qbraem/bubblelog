@@ -128,7 +128,7 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     authContainer.classList.add('hidden');
     dashboard.classList.remove('hidden');
-    profileContainer.classList.remove('hidden');
+    profileContainer.style.display = 'flex';
 
     try {
       const profileDoc = await getDocs(query(collection(db, `users/${user.uid}/profile`)));
@@ -147,7 +147,7 @@ onAuthStateChanged(auth, async (user) => {
   } else {
     authContainer.classList.remove('hidden');
     dashboard.classList.add('hidden');
-    profileContainer.classList.add('hidden');
+    profileContainer.style.display = 'none';
     currentUserData = null;
     lastMeasurement = null;
   }
@@ -187,9 +187,6 @@ dataForm.addEventListener('submit', async (e) => {
       timestamp: new Date(),
       ph, gh, kh, chlorine, nitrite, nitrate, co2
     });
-
-    // Removed confirmation popup to fix error
-    // document.getElementById('confirmation').classList.remove('hidden');
 
     resultDiv.textContent = '';
     showAIReport(lastMeasurement);
