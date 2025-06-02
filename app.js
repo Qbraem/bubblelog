@@ -24,7 +24,7 @@ const authSubmit = document.getElementById('auth-submit');
 const logoutButton = document.getElementById('logout-button');
 const googleSignin = document.getElementById('google-signin');
 const confirmation = document.getElementById('confirmation');
-const historySection = document.getElementById('history');
+const historyContainer = document.getElementById('history-container');
 const historyList = document.getElementById('history-list');
 const detailView = document.getElementById('detail-view');
 const detailContent = document.getElementById('detail-content');
@@ -71,14 +71,12 @@ onAuthStateChanged(auth, user => {
   if (user) {
     authContainer.classList.add('hidden');
     dashboard.classList.remove('hidden');
-    historySection.classList.remove('hidden');
-    document.getElementById('filter-container').classList.remove('hidden');
+    historyContainer.classList.remove('hidden');
     loadData(user.uid);
   } else {
     authContainer.classList.remove('hidden');
     dashboard.classList.add('hidden');
-    historySection.classList.add('hidden');
-    document.getElementById('filter-container').classList.add('hidden');
+    historyContainer.classList.add('hidden');
   }
 });
 
