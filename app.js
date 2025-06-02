@@ -51,6 +51,7 @@ authForm.addEventListener('submit', async (e) => {
       await signInWithEmailAndPassword(auth, email, password);
     }
   } catch (error) {
+    console.error('Auth error:', error);
     alert(error.message);
   }
 });
@@ -59,12 +60,17 @@ googleSignin.addEventListener('click', async () => {
   try {
     await signInWithPopup(auth, provider);
   } catch (error) {
+    console.error('Google sign-in error:', error);
     alert(error.message);
   }
 });
 
 logoutButton.addEventListener('click', async () => {
-  await signOut(auth);
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error('Sign out error:', error);
+  }
 });
 
 onAuthStateChanged(auth, user => {
@@ -72,11 +78,13 @@ onAuthStateChanged(auth, user => {
     authContainer.classList.add('hidden');
     dashboard.classList.remove('hidden');
     historySection.classList.remove('hidden');
+    document.getElementById('filter-container').classList.remove('hidden');
     loadData(user.uid);
   } else {
     authContainer.classList.remove('hidden');
     dashboard.classList.add('hidden');
     historySection.classList.add('hidden');
+    document.getElementById('filter-container').classList.add('hidden');
   }
 });
 
@@ -97,17 +105,17 @@ dataForm.addEventListener('submit', async (e) => {
   const co2 = Math.round(3 * kh * Math.pow(10, (7 - ph)));
 
   try {
-    await addDoc(collection(db, 'measurements'), {
-      userId: user.uid,
+    await addDoc(collection(db, `users/${user.uid}/measurements`), {
       timestamp: new Date(),
       ph, gh, kh, chlorine, nitrite, nitrate, co2
     });
 
+    confirmation.classList.remove('hidden');
     resultDiv.textContent = `Saved! Estimated CO₂: ${co2} mg/L`;
     aiAdvice.textContent = generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2);
-    confirmation.classList.remove('hidden');
     loadData(user.uid);
   } catch (err) {
+    console.error('Firestore write error:', err);
     alert('Error saving data: ' + err.message);
   }
 });
@@ -122,7 +130,7 @@ function generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2) {
 
 async function loadData(uid) {
   historyList.innerHTML = '';
-  const q = query(collection(db, 'measurements'), where('userId', '==', uid), orderBy('timestamp', 'desc'));
+  const q = query(collection(db, `users/${uid}/measurements`), orderBy('timestamp', 'desc'));
   const querySnapshot = await getDocs(q);
 
   const labels = [];
@@ -132,7 +140,7 @@ async function loadData(uid) {
 
   querySnapshot.forEach(doc => {
     const d = doc.data();
-    const date = new Date(d.timestamp.seconds * 1000);
+    const date = d.timestamp.toDate ? d.timestamp.toDate() : new Date(d.timestamp);
     const dateStr = date.toISOString().split('T')[0];
     if (filter && filter !== dateStr) return;
 
