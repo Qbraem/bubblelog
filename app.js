@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
-import { getFirestore, collection, addDoc, query, orderBy, getDocs } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
+import { getFirestore, collection, addDoc, query, orderBy, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCX7hc6IofjuJWUT2M11GkYRnD-XRfwmjA",
@@ -14,7 +14,6 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-const provider = new GoogleAuthProvider();
 
 const authContainer = document.getElementById('auth-container');
 const dashboard = document.getElementById('dashboard');
@@ -22,21 +21,30 @@ const authForm = document.getElementById('auth-form');
 const toggleLink = document.getElementById('toggle-link');
 const authSubmit = document.getElementById('auth-submit');
 const logoutButton = document.getElementById('logout-button');
-const googleSignin = document.getElementById('google-signin');
-const confirmation = document.getElementById('confirmation');
-const historyContainer = document.getElementById('history-container');
-const historyList = document.getElementById('history-list');
-const detailView = document.getElementById('detail-view');
-const detailContent = document.getElementById('detail-content');
-const filterDate = document.getElementById('filter-date');
-const aiAdvice = document.getElementById('ai-advice');
+const profileSection = document.getElementById('profile-section');
+const profileToggle = document.getElementById('profile-toggle');
+const profileDropdown = document.getElementById('profile-dropdown');
+const profileUsername = document.getElementById('profile-username');
+const contactDeveloper = document.getElementById('contact-developer');
+const extraRegisterFields = document.getElementById('extra-register-fields');
 
 let isRegister = false;
+let currentUserData = null;
 
 toggleLink.addEventListener('click', () => {
   isRegister = !isRegister;
   authSubmit.textContent = isRegister ? 'Register' : 'Login';
   toggleLink.textContent = isRegister ? 'Already have an account? Login' : "Don't have an account? Register";
+
+  if (isRegister) {
+    extraRegisterFields.classList.remove('hidden');
+    extraRegisterFields.style.opacity = '1';
+  } else {
+    extraRegisterFields.style.opacity = '0';
+    setTimeout(() => {
+      extraRegisterFields.classList.add('hidden');
+    }, 300);
+  }
 });
 
 authForm.addEventListener('submit', async (e) => {
@@ -44,22 +52,38 @@ authForm.addEventListener('submit', async (e) => {
   const email = authForm.email.value;
   const password = authForm.password.value;
 
-  try {
-    if (isRegister) {
-      await createUserWithEmailAndPassword(auth, email, password);
-    } else {
-      await signInWithEmailAndPassword(auth, email, password);
-    }
-  } catch (error) {
-    alert(error.message);
-  }
-});
+  if (isRegister) {
+    const firstname = document.getElementById('firstname').value.trim();
+    const lastname = document.getElementById('lastname').value.trim();
+    const username = document.getElementById('username').value.trim();
+    const country = document.getElementById('country').value;
 
-googleSignin.addEventListener('click', async () => {
-  try {
-    await signInWithPopup(auth, provider);
-  } catch (error) {
-    alert(error.message);
+    if (!firstname || !lastname || !username || !country) {
+      alert("Please fill all registration fields.");
+      return;
+    }
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      await setDoc(doc(db, "users", user.uid, "profile", "info"), {
+        firstname,
+        lastname,
+        username,
+        country,
+        email
+      });
+
+    } catch (error) {
+      alert(error.message);
+    }
+  } else {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (error) {
+      alert(error.message);
+    }
   }
 });
 
@@ -67,21 +91,51 @@ logoutButton.addEventListener('click', async () => {
   await signOut(auth);
 });
 
-onAuthStateChanged(auth, user => {
+profileToggle.addEventListener('click', () => {
+  profileDropdown.classList.toggle('hidden');
+});
+
+contactDeveloper.addEventListener('click', () => {
+  window.location.href = "mailto:braem@live.be";
+});
+
+onAuthStateChanged(auth, async (user) => {
   if (user) {
     authContainer.classList.add('hidden');
     dashboard.classList.remove('hidden');
-    historyContainer.classList.remove('hidden');
+    profileSection.classList.remove('hidden');
+
+    try {
+      const profileDoc = await getDocs(query(collection(db, `users/${user.uid}/profile`)));
+      if (!profileDoc.empty) {
+        const data = profileDoc.docs[0].data();
+        currentUserData = data;
+        profileUsername.textContent = data.username || user.email;
+      } else {
+        profileUsername.textContent = user.email;
+      }
+    } catch {
+      profileUsername.textContent = user.email;
+    }
+
     loadData(user.uid);
   } else {
     authContainer.classList.remove('hidden');
     dashboard.classList.add('hidden');
-    historyContainer.classList.add('hidden');
+    profileSection.classList.add('hidden');
+    currentUserData = null;
   }
 });
 
+// Data and other app logic below (same as before)...
+
 const dataForm = document.getElementById('data-form');
 const resultDiv = document.getElementById('result');
+const aiAdvice = document.getElementById('ai-advice');
+const historyList = document.getElementById('history-list');
+const detailView = document.getElementById('detail-view');
+const detailContent = document.getElementById('detail-content');
+const filterDate = document.getElementById('filter-date');
 
 dataForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -103,7 +157,7 @@ dataForm.addEventListener('submit', async (e) => {
     });
 
     confirmation.classList.remove('hidden');
-    resultDiv.textContent = `Saved! Estimated CO₂: ${co2} mg/L`;
+    resultDiv.textContent = '';
     aiAdvice.textContent = generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2);
     loadData(user.uid);
   } catch (err) {
@@ -112,11 +166,21 @@ dataForm.addEventListener('submit', async (e) => {
 });
 
 function generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2) {
-  if (co2 > 30) return "⚠️ CO₂ is high. Ensure proper aeration.";
-  if (co2 < 5) return "🔄 CO₂ is very low. Consider adjusting your setup.";
-  if (nitrite > 0.5) return "⚠️ Nitrite levels are elevated. Perform partial water change.";
-  if (nitrate > 40) return "⚠️ Nitrate levels high. May cause algae problems.";
-  return "✅ Water quality looks good!";
+  const advice = [];
+  if (ph < 6.5) advice.push("pH is a bit low, consider buffering.");
+  else if (ph > 7.5) advice.push("pH is high, watch for stress.");
+
+  if (gh < 4) advice.push("GH is low, may affect fish health.");
+  if (kh < 3) advice.push("KH is low, water hardness might fluctuate.");
+
+  if (chlorine > 0) advice.push("Chlorine detected! Use dechlorinator.");
+  if (nitrite > 0.5) advice.push("Nitrite is elevated! Partial water change recommended.");
+  if (nitrate > 40) advice.push("Nitrate is high! Reduce feeding or clean tank.");
+
+  if (co2 > 30) advice.push("CO₂ is high, improve aeration.");
+  if (co2 < 5) advice.push("CO₂ is very low, may limit plant growth.");
+
+  return advice.length ? advice.join(" ") : "✅ Water quality looks good!";
 }
 
 async function loadData(uid) {
