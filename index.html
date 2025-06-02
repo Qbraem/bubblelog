@@ -114,7 +114,7 @@
       background: white;
       border-radius: 1.5rem;
       padding: 2rem;
-      box-shadow: 0 0 0 transparent; /* flat no shadow */
+      box-shadow: 0 0 0 transparent;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
@@ -150,7 +150,7 @@
     }
 
     button#auth-submit {
-      background-color: #2563eb !important; /* helder blauw */
+      background-color: #2563eb !important;
       color: white !important;
       font-weight: 600;
       border-radius: 9999px;
@@ -158,9 +158,10 @@
       transition: background-color 0.2s ease-in-out;
       box-shadow: none !important;
       font-family: 'Raleway', sans-serif;
+      width: auto;
     }
     button#auth-submit:hover {
-      background-color: #1e40af !important; /* iets donkerder blauw */
+      background-color: #1e40af !important;
     }
 
     /* Bubble animation */
@@ -177,7 +178,7 @@
       100% { transform: translateY(-200px); opacity: 0; }
     }
 
-    /* Responsive tweaks */
+    /* Mobile consistency fixes */
     @media (max-width: 600px) {
       main {
         margin: 1rem 1rem 5rem;
@@ -193,6 +194,43 @@
       button#auth-submit {
         padding: 0.5rem;
         font-size: 1rem;
+        width: 100% !important;
+      }
+
+      input[type="text"],
+      input[type="email"],
+      input[type="password"],
+      input[type="number"],
+      select {
+        width: 100% !important;
+      }
+
+      #auth-form #extra-register-fields,
+      #data-form > div.grid.grid-cols-2 {
+        grid-template-columns: 1fr !important;
+      }
+
+      #history-container {
+        flex-direction: column !important;
+        gap: 1rem !important;
+      }
+      #filter-container {
+        width: 100% !important;
+      }
+
+      #history,
+      #detail-view {
+        max-width: 100% !important;
+      }
+
+      #charts {
+        flex-direction: column !important;
+        gap: 1rem !important;
+      }
+      #charts canvas {
+        max-width: 100% !important;
+        min-width: auto !important;
+        min-height: 300px !important;
       }
     }
   </style>
