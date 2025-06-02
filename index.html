@@ -131,9 +131,21 @@
         </button>
       </div>
 
-      <!-- AI Advies box -->
+      <!-- AI Advies box met statusmeter -->
       <div id="ai-advice-box" class="max-w-xl mx-auto mt-4 p-4 rounded-xl shadow-lg text-gray-900 text-center hidden">
-        <p id="ai-advice-text" class="font-semibold text-lg"></p>
+        <p class="font-semibold text-lg mb-2">AI Water Quality Advice</p>
+        
+        <div id="ai-status-meter" class="relative h-8 w-full max-w-md mx-auto rounded-full bg-gradient-to-r from-green-500 via-yellow-300 to-red-500">
+          <div id="ai-status-arrow" class="absolute top-0 -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-gray-900" style="left: 50%;"></div>
+        </div>
+
+        <div id="ai-status-icon" class="my-3 text-4xl"></div>
+
+        <p id="ai-advice-text" class="mb-2"></p>
+
+        <p class="text-xs text-gray-600 mt-3 px-2">
+          <em>Note: This advice is AI-based and for guidance only. Measurements with professional equipment are necessary. No guarantee on improvement.</em>
+        </p>
       </div>
 
       <div id="history-container" class="flex gap-4 mt-10 max-w-xl mx-auto">
