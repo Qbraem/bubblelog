@@ -98,7 +98,6 @@ profileToggle.addEventListener('click', () => {
   profileToggle.setAttribute('aria-expanded', !isHidden);
 });
 
-// Sluit dropdown als gebruiker buiten klikt
 document.addEventListener('click', (event) => {
   if (!profileContainer.contains(event.target)) {
     if (!profileDropdown.classList.contains('hidden')) {
