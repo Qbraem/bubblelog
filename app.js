@@ -320,12 +320,36 @@ aiAdviceButton.addEventListener('click', () => {
   const { ph, gh, kh, chlorine, nitrite, nitrate, co2 } = lastMeasurement;
   const result = generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2);
 
-  let bgColor;
-  if (result.severity === 0) bgColor = '#d1fae5';        // groen
-  else if (result.severity === 1) bgColor = '#fef3c7';   // oranje
-  else bgColor = '#fee2e2';                              // rood
+  // Kleur & meter positie bepalen
+  let bgColor, icon, iconColor, arrowPos;
+
+  if (result.severity === 0) {
+    bgColor = '#d1fae5';        // licht groen achtergrond box
+    icon = '✅';                // groen checkmark
+    iconColor = 'text-green-600';
+    arrowPos = 10;              // 10% van links = groen kant
+  } else if (result.severity === 1) {
+    bgColor = '#fef3c7';        // licht oranje
+    icon = '⚠️';                // waarschuwing
+    iconColor = 'text-yellow-500';
+    arrowPos = 50;              // 50% = midden/oranje
+  } else {
+    bgColor = '#fee2e2';        // licht rood
+    icon = '❌';                // rood kruis
+    iconColor = 'text-red-600';
+    arrowPos = 90;              // 90% = rood kant
+  }
 
   aiAdviceBox.classList.remove('hidden');
   aiAdviceBox.style.backgroundColor = bgColor;
   aiAdviceText.textContent = result.text;
+
+  // Update pijl positie
+  const arrow = document.getElementById('ai-status-arrow');
+  arrow.style.left = arrowPos + '%';
+
+  // Update icoon
+  const iconDiv = document.getElementById('ai-status-icon');
+  iconDiv.textContent = icon;
+  iconDiv.className = iconColor + ' my-3 text-4xl';
 });
