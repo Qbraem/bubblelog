@@ -93,15 +93,15 @@ logoutButton.addEventListener('click', async () => {
 });
 
 profileToggle.addEventListener('click', () => {
-  const isHidden = profileDropdown.classList.toggle('hidden');
-  document.getElementById('profile-arrow').style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
-  profileToggle.setAttribute('aria-expanded', !isHidden);
+  const isShown = profileDropdown.classList.toggle('show');
+  document.getElementById('profile-arrow').style.transform = isShown ? 'rotate(180deg)' : 'rotate(0deg)';
+  profileToggle.setAttribute('aria-expanded', isShown);
 });
 
 document.addEventListener('click', (event) => {
   if (!profileContainer.contains(event.target)) {
-    if (!profileDropdown.classList.contains('hidden')) {
-      profileDropdown.classList.add('hidden');
+    if (profileDropdown.classList.contains('show')) {
+      profileDropdown.classList.remove('show');
       document.getElementById('profile-arrow').style.transform = 'rotate(0deg)';
       profileToggle.setAttribute('aria-expanded', false);
     }
