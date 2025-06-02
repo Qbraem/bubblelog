@@ -30,6 +30,7 @@ const extraRegisterFields = document.getElementById('extra-register-fields');
 
 let isRegister = false;
 let currentUserData = null;
+let lastMeasurement = null; // voor AI advies
 
 toggleLink.addEventListener('click', () => {
   isRegister = !isRegister;
@@ -92,7 +93,9 @@ logoutButton.addEventListener('click', async () => {
 });
 
 profileToggle.addEventListener('click', () => {
-  profileDropdown.classList.toggle('hidden');
+  const isHidden = profileDropdown.classList.toggle('hidden');
+  document.getElementById('profile-arrow').style.transform = isHidden ? 'rotate(0deg)' : 'rotate(180deg)';
+  profileToggle.setAttribute('aria-expanded', !isHidden);
 });
 
 contactDeveloper.addEventListener('click', () => {
@@ -127,8 +130,6 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-// Data and other app logic below (same as before)...
-
 const dataForm = document.getElementById('data-form');
 const resultDiv = document.getElementById('result');
 const aiAdvice = document.getElementById('ai-advice');
@@ -136,6 +137,9 @@ const historyList = document.getElementById('history-list');
 const detailView = document.getElementById('detail-view');
 const detailContent = document.getElementById('detail-content');
 const filterDate = document.getElementById('filter-date');
+const aiAdviceButton = document.getElementById('ai-advice-button');
+const aiAdviceBox = document.getElementById('ai-advice-box');
+const aiAdviceText = document.getElementById('ai-advice-text');
 
 dataForm.addEventListener('submit', async (e) => {
   e.preventDefault();
@@ -150,13 +154,15 @@ dataForm.addEventListener('submit', async (e) => {
   const nitrate = parseFloat(document.getElementById('nitrate').value);
   const co2 = Math.round(3 * kh * Math.pow(10, (7 - ph)));
 
+  lastMeasurement = { ph, gh, kh, chlorine, nitrite, nitrate, co2 };
+
   try {
     await addDoc(collection(db, `users/${user.uid}/measurements`), {
       timestamp: new Date(),
       ph, gh, kh, chlorine, nitrite, nitrate, co2
     });
 
-    confirmation.classList.remove('hidden');
+    document.getElementById('confirmation').classList.remove('hidden');
     resultDiv.textContent = '';
     aiAdvice.textContent = generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2);
     loadData(user.uid);
@@ -239,6 +245,13 @@ function renderChart(canvasId, labels, data, label, color) {
         backgroundColor: color + '33',
         tension: 0.4
       }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { beginAtZero: true }
+      }
     }
   });
 }
@@ -246,4 +259,39 @@ function renderChart(canvasId, labels, data, label, color) {
 filterDate.addEventListener('change', () => {
   const user = auth.currentUser;
   if (user) loadData(user.uid);
+});
+
+aiAdviceButton.addEventListener('click', () => {
+  if (!lastMeasurement) {
+    alert("No measurement data available for AI advice.");
+    return;
+  }
+
+  const { ph, gh, kh, chlorine, nitrite, nitrate, co2 } = lastMeasurement;
+
+  let color = 'green';
+  let bgColor = '#d1fae5';
+  let advice = "✅ Water quality looks good!";
+
+  // Conditions for advice and color coding
+  if (
+    ph < 6.5 || ph > 7.5 ||
+    gh < 4 || kh < 3
+  ) {
+    color = 'orange';
+    bgColor = '#fef3c7';
+    advice = "⚠️ Some parameters are out of ideal range. Monitor carefully.";
+  }
+
+  if (
+    chlorine > 0 || nitrite > 0.5 || nitrate > 40 || co2 > 30
+  ) {
+    color = 'red';
+    bgColor = '#fee2e2';
+    advice = "❌ Critical levels detected! Immediate action recommended.";
+  }
+
+  aiAdviceBox.classList.remove('hidden');
+  aiAdviceBox.style.backgroundColor = bgColor;
+  aiAdviceText.textContent = advice;
 });
