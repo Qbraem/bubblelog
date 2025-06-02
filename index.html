@@ -6,7 +6,6 @@
   <title>BubbleLog</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script type="module" src="app.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@700&display=swap');
 
@@ -43,6 +42,7 @@
       font-weight: 700;
       font-size: 1.5rem;
       user-select: none;
+      display: none; /* default hidden */
     }
     #profile-dropdown {
       position: absolute;
@@ -68,6 +68,7 @@
       font-family: 'Raleway', sans-serif;
       font-size: 1rem;
       color: #1e40af;
+      cursor: pointer;
     }
 
     #header-section {
@@ -148,7 +149,8 @@
       color: #b91c1c;
     }
 
-    button#auth-submit {
+    button#auth-submit,
+    button[type="submit"] {
       background-color: #2563eb !important;
       color: white !important;
       font-weight: 600;
@@ -158,8 +160,10 @@
       box-shadow: none !important;
       font-family: 'Raleway', sans-serif;
       width: auto;
+      cursor: pointer;
     }
-    button#auth-submit:hover {
+    button#auth-submit:hover,
+    button[type="submit"]:hover {
       background-color: #1e40af !important;
     }
 
@@ -200,7 +204,8 @@
         padding-top: 0.5rem !important;
         padding-bottom: 0.5rem !important;
       }
-      button#auth-submit {
+      button#auth-submit,
+      button[type="submit"] {
         padding: 0.5rem;
         font-size: 1rem;
         width: 100% !important;
@@ -364,5 +369,7 @@
   <footer>
     Indie app developed in Belgium by <span class="text-blue-600">Quinten Braem</span>, with a little help from AI.
   </footer>
+
+  <script type="module" src="app.js"></script>
 </body>
 </html>
