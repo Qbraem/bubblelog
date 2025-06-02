@@ -34,6 +34,17 @@
       max-height: 350px;
       width: 100% !important;
     }
+    /* Extra styling voor verwijderknop */
+    .delete-btn {
+      cursor: pointer;
+      color: #dc2626; /* Tailwind red-600 */
+      font-weight: bold;
+      margin-left: 8px;
+      user-select: none;
+    }
+    .delete-btn:hover {
+      color: #b91c1c; /* Tailwind red-700 */
+    }
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700&display=swap" rel="stylesheet" />
   <style>
@@ -78,12 +89,12 @@
   <div class="w-full max-w-xl mx-auto bg-white p-6 rounded-3xl shadow-xl text-gray-900">
     <div id="auth-container">
       <h2 class="text-xl font-semibold mb-4 text-center">Login or Register</h2>
-      <form id="auth-form" class="grid gap-4">
+      <form id="auth-form" class="grid gap-4" autocomplete="off" novalidate>
         <!-- Extra fields for registration -->
         <div id="extra-register-fields" class="hidden grid grid-cols-2 gap-4">
-          <input type="text" name="firstname" id="firstname" placeholder="First Name" class="border border-blue-200 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" />
-          <input type="text" name="lastname" id="lastname" placeholder="Last Name" class="border border-blue-200 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" />
-          <input type="text" name="username" id="username" placeholder="Account Name" class="col-span-2 border border-blue-200 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" />
+          <input type="text" name="firstname" id="firstname" placeholder="First Name" class="border border-blue-200 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" autocomplete="given-name" />
+          <input type="text" name="lastname" id="lastname" placeholder="Last Name" class="border border-blue-200 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" autocomplete="family-name" />
+          <input type="text" name="username" id="username" placeholder="Account Name" class="col-span-2 border border-blue-200 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" autocomplete="username" />
           <select name="country" id="country" class="col-span-2 border border-blue-200 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" >
             <option value="" disabled selected>Select Country</option>
             <option value="Belgium">Belgium</option>
@@ -94,8 +105,8 @@
           </select>
         </div>
 
-        <input type="email" name="email" placeholder="Email" class="w-full border border-blue-200 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" required />
-        <input type="password" name="password" placeholder="Password" class="w-full border border-blue-200 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" required />
+        <input type="email" name="email" placeholder="Email" class="w-full border border-blue-200 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" required autocomplete="email" />
+        <input type="password" name="password" placeholder="Password" class="w-full border border-blue-200 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" required autocomplete="current-password" />
         <button id="auth-submit" type="submit" class="bg-gradient-to-r from-blue-500 to-cyan-400 text-white font-semibold py-2 rounded-full hover:from-blue-600 hover:to-cyan-500">Login</button>
         <p class="text-sm text-center text-blue-600 cursor-pointer" id="toggle-link">Don't have an account? Register</p>
       </form>
@@ -104,7 +115,15 @@
     <!-- Dashboard container, hidden by default -->
     <div id="dashboard" class="hidden">
       <h2 class="text-xl font-semibold mb-4 text-center text-blue-700">Your Measurements</h2>
-      <form id="data-form" class="grid gap-3 mb-6">
+      <form id="data-form" class="grid gap-3 mb-6" autocomplete="off" novalidate>
+        <div class="grid grid-cols-2 gap-2 text-gray-700 text-xs font-semibold">
+          <label for="ph" class="flex items-center gap-1"><span>pH</span><span>(unitless)</span></label>
+          <label for="gh" class="flex items-center gap-1"><span>GH</span><span>(°dH)</span></label>
+          <label for="kh" class="flex items-center gap-1"><span>KH</span><span>(°dH)</span></label>
+          <label for="chlorine" class="flex items-center gap-1"><span>Chlorine</span><span>(mg/L)</span></label>
+          <label for="nitrite" class="flex items-center gap-1"><span>Nitrite</span><span>(mg/L)</span></label>
+          <label for="nitrate" class="flex items-center gap-1"><span>Nitrate</span><span>(mg/L)</span></label>
+        </div>
         <div class="grid grid-cols-2 gap-2">
           <input type="number" step="0.1" id="ph" placeholder="pH" class="border rounded-full px-3 py-2" required />
           <input type="number" step="0.1" id="gh" placeholder="GH" class="border rounded-full px-3 py-2" required />
@@ -116,7 +135,6 @@
         <button type="submit" class="mt-4 bg-blue-500 text-white font-semibold py-2 rounded-full hover:bg-blue-600">Save</button>
       </form>
       <div id="result" class="text-center text-sm text-blue-800 mb-2"></div>
-      <div id="ai-advice" class="text-center text-xs italic text-gray-600 mb-4"></div>
 
       <!-- Grafieken wrapper -->
       <div id="charts" class="flex flex-wrap gap-4 max-w-xl mx-auto mb-6">
@@ -124,15 +142,8 @@
         <canvas id="chart-co2" class="flex-grow min-w-[300px] max-w-[48%]" style="min-height:250px;"></canvas>
       </div>
 
-      <!-- AI Water Advice knop -->
-      <div class="max-w-xl mx-auto mt-2 text-center">
-        <button id="ai-advice-button" class="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold px-6 py-2 rounded-full shadow-md transition-colors duration-300">
-          AI Water Advice
-        </button>
-      </div>
-
-      <!-- AI Advies box met statusmeter -->
-      <div id="ai-advice-box" class="max-w-xl mx-auto mt-4 p-4 rounded-xl shadow-lg text-gray-900 text-center hidden">
+      <!-- AI Rapport met statusmeter -->
+      <div id="ai-advice-box" class="max-w-xl mx-auto mt-4 p-4 rounded-xl shadow-lg text-gray-900 text-center">
         <p class="font-semibold text-lg mb-2">AI Water Quality Advice</p>
         
         <div id="ai-status-meter" class="relative h-8 w-full max-w-md mx-auto rounded-full bg-gradient-to-r from-green-500 via-yellow-300 to-red-500">
