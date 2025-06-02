@@ -92,6 +92,29 @@
       <canvas id="chart" class="w-full max-w-md mx-auto mb-6"></canvas>
       <canvas id="chart-co2" class="w-full max-w-md mx-auto"></canvas>
       <button id="logout-button" class="mt-6 block mx-auto text-red-500 hover:underline">Logout</button>
+
+      <!-- History and Filter in 2 columns -->
+      <div id="history-container" class="flex gap-4 mt-10 max-w-xl mx-auto">
+        <div id="history" class="flex-1 bg-blue-50 rounded-xl p-4 text-sm text-blue-900 overflow-auto max-h-64">
+          <h3 class="text-lg font-semibold mb-2 text-blue-800">History</h3>
+          <ul id="history-list" class="divide-y divide-blue-200 overflow-auto max-h-52">
+            <!-- Entries worden hier dynamisch toegevoegd -->
+          </ul>
+        </div>
+        <div id="filter-container" class="w-40 bg-white rounded-xl p-4 shadow-md text-sm text-blue-900">
+          <label for="filter-date" class="block mb-1 font-medium">Filter by date</label>
+          <input type="date" id="filter-date" class="rounded-lg border border-blue-300 px-3 py-1 w-full text-sm" />
+        </div>
+      </div>
+
+      <!-- Detail view -->
+      <div id="detail-view" class="mt-6 hidden bg-white p-4 rounded-xl shadow text-sm text-gray-900 max-w-xl mx-auto">
+        <h4 class="font-bold mb-2">Measurement Detail</h4>
+        <div id="detail-content">
+          <!-- Detail info appears here -->
+        </div>
+        <button onclick="document.getElementById('detail-view').classList.add('hidden')" class="mt-4 px-3 py-1 bg-blue-200 rounded-full text-blue-800 hover:bg-blue-300">Close</button>
+      </div>
     </div>
   </div>
 
@@ -101,25 +124,6 @@
       <h3 class="text-xl font-semibold text-blue-700 mb-2">Measurement Saved!</h3>
       <p class="text-gray-700">Your data has been successfully stored.</p>
       <button onclick="document.getElementById('confirmation').classList.add('hidden')" class="mt-4 px-4 py-2 bg-blue-500 text-white rounded-full hover:bg-blue-600">OK</button>
-    </div>
-  </div>
-
-  <!-- Data History Overview -->
-  <div id="filter-container" class="hidden mb-4 text-sm text-blue-900">
-    <label for="filter-date" class="block mb-1 font-medium">Filter by date</label>
-    <input type="date" id="filter-date" class="rounded-lg border px-3 py-1 text-sm" />
-  </div>
-  <div id="history" class="hidden mt-10">
-    <h3 class="text-lg font-semibold mb-2 text-blue-800">History</h3>
-    <ul id="history-list" class="divide-y divide-blue-200 bg-blue-50 rounded-xl p-4 text-sm text-blue-900">
-      <!-- Entries will be added here dynamically -->
-    </ul>
-    <div id="detail-view" class="mt-6 hidden bg-white p-4 rounded-xl shadow text-sm text-gray-900">
-      <h4 class="font-bold mb-2">Measurement Detail</h4>
-      <div id="detail-content">
-        <!-- Detail info appears here -->
-      </div>
-      <button onclick="document.getElementById('detail-view').classList.add('hidden')" class="mt-4 px-3 py-1 bg-blue-200 rounded-full text-blue-800 hover:bg-blue-300">Close</button>
     </div>
   </div>
 
