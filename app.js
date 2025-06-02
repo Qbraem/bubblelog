@@ -189,7 +189,6 @@ dataForm.addEventListener('submit', async (e) => {
     });
 
     resultDiv.textContent = '';
-    showAIReport(lastMeasurement);
     loadData(user.uid);
   } catch (err) {
     alert('Error saving data: ' + err.message);
@@ -326,9 +325,9 @@ async function loadData(uid) {
     showAIReport(lastMeasurement);
   } else {
     lastMeasurement = null;
-    aiAdviceBox.classList.remove('disabled');
+    aiAdviceBox.classList.add('disabled');
     aiAdviceBox.style.backgroundColor = '#e0e0e0';
-    aiAdviceText.textContent = "This feature will be available in a future version.";
+    aiAdviceText.textContent = "Add your first measurements to get an AI advice!";
     aiStatusArrow.style.display = 'none';
     aiStatusIcon.textContent = '⏳';
     aiStatusIcon.className = 'text-gray-500 my-3 text-4xl';
@@ -373,7 +372,54 @@ function updateOrCreateChart(canvasId, labels, data, label, color) {
 }
 
 function showAIReport(measurement) {
-  // Disabled, show message only, handled in loadData when no data
+  const aiBox = document.getElementById('ai-advice-box');
+  const aiText = document.getElementById('ai-advice-text');
+  const aiIcon = document.getElementById('ai-status-icon');
+  const aiMeter = document.getElementById('ai-status-meter');
+  const aiArrow = document.getElementById('ai-status-arrow');
+
+  if (!measurement) {
+    aiText.textContent = "Add your first measurements to get an AI advice!";
+    aiIcon.textContent = '⏳';
+    aiArrow.style.display = 'none';
+    aiMeter.style.background = '#e0e0e0';
+    aiBox.classList.add('disabled');
+    return;
+  }
+
+  aiBox.classList.remove('disabled');
+
+  const { text, severity } = generateAdvice(
+    measurement.ph,
+    measurement.gh,
+    measurement.kh,
+    measurement.chlorine,
+    measurement.nitrite,
+    measurement.nitrate,
+    measurement.co2
+  );
+
+  aiText.textContent = text;
+
+  // Colors: green, orange, red
+  const colors = ['#10b981', '#f59e0b', '#ef4444'];
+  aiMeter.style.background = `linear-gradient(to right, ${colors.join(', ')})`;
+
+  const posPerc = severity === 0 ? 10 : severity === 1 ? 50 : 90;
+
+  aiArrow.style.display = 'block';
+  aiArrow.style.position = 'absolute';
+  aiArrow.style.top = '-12px';
+  aiArrow.style.left = `calc(${posPerc}% - 8px)`;
+  aiArrow.style.width = '0';
+  aiArrow.style.height = '0';
+  aiArrow.style.borderLeft = '8px solid transparent';
+  aiArrow.style.borderRight = '8px solid transparent';
+  aiArrow.style.borderBottom = `12px solid ${colors[severity]}`;
+
+  const icons = ['✅', '⚠️', '❌'];
+  aiIcon.textContent = icons[severity];
+  aiIcon.style.color = colors[severity];
 }
 
 filterDate.addEventListener('change', () => {
