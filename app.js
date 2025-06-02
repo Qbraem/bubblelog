@@ -127,6 +127,7 @@ onAuthStateChanged(auth, async (user) => {
     dashboard.classList.add('hidden');
     profileSection.classList.add('hidden');
     currentUserData = null;
+    lastMeasurement = null;
   }
 });
 
@@ -240,11 +241,15 @@ async function loadData(uid) {
   const co2Data = [];
   const filter = filterDate.value;
 
-  querySnapshot.forEach(doc => {
+  let firstMeasurement = null;
+
+  querySnapshot.forEach((doc, index) => {
     const d = doc.data();
     const date = d.timestamp.toDate ? d.timestamp.toDate() : new Date(d.timestamp);
     const dateStr = date.toISOString().split('T')[0];
     if (filter && filter !== dateStr) return;
+
+    if (index === 0) firstMeasurement = d;  // Neem eerste (meest recente) meting
 
     labels.push(date.toLocaleDateString());
     phData.push(d.ph);
@@ -268,6 +273,10 @@ async function loadData(uid) {
     };
     historyList.appendChild(li);
   });
+
+  if (firstMeasurement) {
+    lastMeasurement = firstMeasurement;
+  }
 
   renderChart('chart', labels, phData, 'pH', 'rgba(59, 130, 246, 1)');
   renderChart('chart-co2', labels, co2Data, 'CO₂ (mg/L)', 'rgba(34, 197, 94, 1)');
