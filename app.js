@@ -38,7 +38,7 @@ const toggleLink = document.getElementById('toggle-link');
 const authSubmit = document.getElementById('auth-submit');
 const logoutButton = document.getElementById('logout-button');
 const profileContainer = document.getElementById('profile-container');
-const profileToggle = document.getElementById('profile-toggle');
+const profileToggle = document.getElementById('profile-name-dropdown');
 const profileDropdown = document.getElementById('profile-dropdown');
 const profileUsername = document.getElementById('profile-username');
 const contactDeveloper = document.getElementById('contact-developer');
@@ -326,12 +326,12 @@ async function loadData(uid) {
     showAIReport(lastMeasurement);
   } else {
     lastMeasurement = null;
-    aiAdviceBox.classList.remove('hidden');
+    aiAdviceBox.classList.remove('disabled');
     aiAdviceBox.style.backgroundColor = '#e0e0e0';
-    aiAdviceText.textContent = "Add your first measurements to get an AI advice!";
-    aiStatusArrow.style.left = '50%';
-    aiStatusIcon.textContent = 'ℹ️';
-    aiStatusIcon.className = 'text-gray-700 my-3 text-4xl';
+    aiAdviceText.textContent = "This feature will be available in a future version.";
+    aiStatusArrow.style.display = 'none';
+    aiStatusIcon.textContent = '⏳';
+    aiStatusIcon.className = 'text-gray-500 my-3 text-4xl';
   }
 
   updateOrCreateChart('chart', labels, phData, 'pH', 'rgba(59, 130, 246, 1)');
@@ -373,35 +373,7 @@ function updateOrCreateChart(canvasId, labels, data, label, color) {
 }
 
 function showAIReport(measurement) {
-  const { ph, gh, kh, chlorine, nitrite, nitrate, co2 } = measurement;
-  const result = generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2);
-
-  let bgColor, icon, iconColor, arrowPos;
-
-  if (result.severity === 0) {
-    bgColor = '#d1fae5';
-    icon = '✅';
-    iconColor = 'text-green-600';
-    arrowPos = 10;
-  } else if (result.severity === 1) {
-    bgColor = '#fef3c7';
-    icon = '⚠️';
-    iconColor = 'text-yellow-500';
-    arrowPos = 50;
-  } else {
-    bgColor = '#fee2e2';
-    icon = '❌';
-    iconColor = 'text-red-600';
-    arrowPos = 90;
-  }
-
-  aiAdviceBox.classList.remove('hidden');
-  aiAdviceBox.style.backgroundColor = bgColor;
-  aiAdviceText.textContent = result.text;
-
-  aiStatusArrow.style.left = arrowPos + '%';
-  aiStatusIcon.textContent = icon;
-  aiStatusIcon.className = iconColor + ' my-3 text-4xl';
+  // Disabled, show message only, handled in loadData when no data
 }
 
 filterDate.addEventListener('change', () => {
