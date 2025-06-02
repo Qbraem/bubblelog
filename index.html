@@ -50,6 +50,10 @@
       background: white;
       box-shadow: 0 1px 3px rgb(0 0 0 / 0.1);
       border-bottom: 1px solid #e5e7eb;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 9999;
     }
     #profile-container {
       max-width: 960px;
@@ -84,12 +88,12 @@
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
       min-height: 100vh;
       margin: 0;
-      padding: 0;
+      padding-top: 56px; /* navbar height */
     }
 
     main {
       max-width: 960px;
-      margin: 1rem auto 4rem; /* bottom margin for footer */
+      margin: 1rem auto 4rem;
       background: white;
       border-radius: 1.5rem;
       padding: 2rem;
