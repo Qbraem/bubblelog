@@ -373,9 +373,29 @@ function updateOrCreateChart(canvasId, labels, data, label, color) {
   }
 }
 
+
 function showAIReport(measurement) {
-  // Disabled, show message only, handled in loadData when no data
+  if (!measurement) return;
+  const { ph, gh, kh, chlorine, nitrite, nitrate, co2 } = measurement;
+  const { text, severity } = generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2);
+
+  aiAdviceBox.classList.remove('disabled');
+  aiAdviceBox.style.backgroundColor = severity === 2 ? '#fee2e2' : (severity === 1 ? '#fef3c7' : '#d1fae5');
+  aiAdviceText.textContent = text;
+
+  aiStatusArrow.style.display = 'block';
+  aiStatusArrow.style.height = '8px';
+  aiStatusArrow.style.width = '8px';
+  aiStatusArrow.style.borderRadius = '50%';
+  aiStatusArrow.style.margin = '10px auto';
+  aiStatusArrow.style.backgroundColor = severity === 2 ? '#dc2626' : (severity === 1 ? '#facc15' : '#10b981');
+
+  aiStatusIcon.textContent = severity === 2 ? '⚠️' : (severity === 1 ? '⚠' : '✅');
+  aiStatusIcon.className = severity === 2 ? 'my-3 text-4xl text-red-600' :
+                          severity === 1 ? 'my-3 text-4xl text-yellow-600' :
+                                           'my-3 text-4xl text-green-600';
 }
+
 
 filterDate.addEventListener('change', () => {
   const user = auth.currentUser;
