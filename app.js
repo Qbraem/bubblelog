@@ -323,6 +323,7 @@ async function loadData(uid) {
 
   if (firstMeasurement) {
     lastMeasurement = firstMeasurement;
+    showAIReport(firstMeasurement);
     showAIReport(lastMeasurement);
   } else {
     lastMeasurement = null;
