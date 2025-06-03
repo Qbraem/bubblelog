@@ -265,16 +265,26 @@ async function loadData(uid) {
   const co2Data = [];
   const filter = filterDate.value;
 
-  let firstMeasurement = null;
+  let latestMeasurement = null;
 
   querySnapshot.forEach((docSnapshot, index) => {
     const d = docSnapshot.data();
     const docId = docSnapshot.id;
-    const date = d.timestamp.toDate ? d.timestamp.toDate() : new Date(d.timestamp);
+    // Betere timestamp handling:
+    let date;
+    if (d.timestamp && typeof d.timestamp.toDate === "function") {
+      date = d.timestamp.toDate();
+    } else if (d.timestamp instanceof Date) {
+      date = d.timestamp;
+    } else if (typeof d.timestamp === "string" || typeof d.timestamp === "number") {
+      date = new Date(d.timestamp);
+    } else {
+      date = new Date();
+    }
     const dateStr = date.toISOString().split('T')[0];
     if (filter && filter !== dateStr) return;
 
-    if (index === 0) firstMeasurement = d;
+    if (index === 0) latestMeasurement = d;
 
     labels.push(date.toLocaleDateString());
     phData.push(d.ph);
@@ -321,10 +331,10 @@ async function loadData(uid) {
     historyList.appendChild(li);
   });
 
-  if (firstMeasurement) {
-    lastMeasurement = firstMeasurement;
-    showAIReport(firstMeasurement);
-    showAIReport(lastMeasurement);
+  // Altijd AI advice tonen van laatste meting
+  if (latestMeasurement) {
+    lastMeasurement = latestMeasurement;
+    showAIReport(latestMeasurement);
   } else {
     lastMeasurement = null;
     aiAdviceBox.classList.remove('disabled');
@@ -373,7 +383,6 @@ function updateOrCreateChart(canvasId, labels, data, label, color) {
   }
 }
 
-
 function showAIReport(measurement) {
   const { ph, gh, kh, chlorine, nitrite, nitrate, co2 } = measurement;
   const { text, severity } = generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2);
@@ -395,12 +404,10 @@ function showAIReport(measurement) {
                                            'my-3 text-4xl text-green-600';
 }
 
-
 filterDate.addEventListener('change', () => {
   const user = auth.currentUser;
   if (user) loadData(user.uid);
 });
-
 
 // Check History button functionality
 const checkHistoryBtn = document.getElementById('check-history-btn');
