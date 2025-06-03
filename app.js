@@ -1,3 +1,11 @@
+function parseFirestoreTimestamp(ts) {
+  if (!ts) return new Date();
+  if (typeof ts.toDate === "function") return ts.toDate();
+  if (ts instanceof Date) return ts;
+  if (typeof ts === "string" || typeof ts === "number") return new Date(ts);
+  return new Date();
+}
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
 import {
   getAuth,
