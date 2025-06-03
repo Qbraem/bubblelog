@@ -49,7 +49,6 @@ const resultDiv = document.getElementById('result');
 const historyList = document.getElementById('history-list');
 const detailView = document.getElementById('detail-view');
 const detailContent = document.getElementById('detail-content');
-const filterDate = document.getElementById('filter-date');
 const aiAdviceBox = document.getElementById('ai-advice-box');
 const aiAdviceText = document.getElementById('ai-advice-text');
 const aiStatusArrow = document.getElementById('ai-status-arrow');
