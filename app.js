@@ -1,3 +1,9 @@
+window.addEventListener('DOMContentLoaded', () => {
+  alert("De pagina is geladen!");
+  console.log(document.getElementById('result'));
+  console.log(document.getElementById('check-history-btn'));
+});
+
 function parseFirestoreTimestamp(ts) {
   if (!ts) return new Date();
   if (typeof ts.toDate === "function") return ts.toDate();
