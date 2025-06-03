@@ -370,15 +370,4 @@ function updateOrCreateChart(canvasId, labels, data, label, color) {
     else chartCo2 = chartInstance;
   }
 }
-
-// --------- Filter/History Button ----------
-filterDate.addEventListener('change', () => {
-  const user = auth.currentUser;
-  if (user) loadData(user.uid);
-});
-checkHistoryBtn.addEventListener('click', () => {
-  const user = auth.currentUser;
-  if (user) {
-    loadData(user.uid);
-  }
 });
