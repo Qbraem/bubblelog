@@ -89,6 +89,11 @@
       transition: transform 0.3s ease;
     }
 
+    .settings-icon {
+      width: 1rem;
+      height: 1rem;
+    }
+
     #header-section {
       max-width: 960px;
       margin: 1rem auto 2rem;
@@ -206,6 +211,22 @@
       pointer-events: none;
     }
 
+    #ai-status-meter {
+      height: 12px;
+      background: linear-gradient(to right, #10b981, #facc15, #dc2626);
+      position: relative;
+    }
+
+    #ai-status-arrow {
+      position: absolute;
+      top: 0;
+      transform: translateX(-50%) translateY(-100%);
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+    }
+
     /* Mobile consistency fixes */
     @media (max-width: 600px) {
       main {
@@ -288,7 +309,7 @@
 
       <div id="profile-name-dropdown" tabindex="0" aria-haspopup="true" aria-expanded="false" role="button" aria-controls="profile-dropdown" class="flex items-center cursor-pointer select-none ml-auto gap-2">
         <span id="profile-username" class="font-semibold text-blue-700"></span>
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true" aria-label="Settings icon">
+        <svg xmlns="http://www.w3.org/2000/svg" class="settings-icon text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true" aria-label="Settings icon">
           <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0a1.724 1.724 0 002.602 1.086c.833-.58 1.797.197 1.431 1.1a1.724 1.724 0 001.462 2.457c.947.114 1.208 1.441.39 1.942a1.724 1.724 0 00.292 2.797c.818.442.34 1.842-.717 1.56a1.724 1.724 0 00-1.705 1.052c-.338.795-1.518.795-1.856 0a1.724 1.724 0 00-1.705-1.052c-1.057.282-1.536-1.118-.718-1.56a1.724 1.724 0 00.291-2.797c-.817-.5-1.24-1.828-.39-1.942a1.724 1.724 0 001.462-2.457c-.366-.903.598-1.68 1.431-1.1a1.724 1.724 0 002.602-1.086z" />
         </svg>
         <svg xmlns="http://www.w3.org/2000/svg" id="profile-arrow" class="h-4 w-4 text-blue-700 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
@@ -369,7 +390,7 @@
 
       <div id="ai-advice-box" class="max-w-xl mx-auto mt-4 p-4 rounded-xl shadow-lg text-gray-900 text-center disabled" aria-disabled="true" tabindex="-1">
         <p class="font-semibold text-lg mb-2">AI Water Quality Advice</p>
-        <div id="ai-status-meter" class="relative h-8 w-full max-w-md mx-auto rounded-full bg-gray-300">
+        <div id="ai-status-meter" class="relative w-full max-w-md mx-auto rounded-full">
           <div id="ai-status-arrow" class="hidden"></div>
         </div>
         <div id="ai-status-icon" class="my-3 text-4xl text-gray-500">⏳</div>
