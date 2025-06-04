@@ -163,6 +163,7 @@ const aiAdviceBox = document.getElementById('ai-advice-box');
 const aiAdviceText = document.getElementById('ai-advice-text');
 const aiStatusArrow = document.getElementById('ai-status-arrow');
 const aiStatusIcon = document.getElementById('ai-status-icon');
+const aiStatusMeter = document.getElementById('ai-status-meter');
 
 let chartPh = null;
 let chartCo2 = null;
@@ -382,11 +383,11 @@ function showAIReport(measurement) {
   aiAdviceText.textContent = text;
 
   aiStatusArrow.style.display = 'block';
-  aiStatusArrow.style.height = '8px';
-  aiStatusArrow.style.width = '8px';
-  aiStatusArrow.style.borderRadius = '50%';
-  aiStatusArrow.style.margin = '10px auto';
-  aiStatusArrow.style.backgroundColor = severity === 2 ? '#dc2626' : (severity === 1 ? '#facc15' : '#10b981');
+  aiStatusArrow.style.borderBottom = '8px solid ' + (severity === 2 ? '#dc2626' : (severity === 1 ? '#facc15' : '#10b981'));
+  aiStatusArrow.style.borderLeft = '6px solid transparent';
+  aiStatusArrow.style.borderRight = '6px solid transparent';
+  const positions = ['10%', '50%', '90%'];
+  aiStatusArrow.style.left = positions[severity];
 
   aiStatusIcon.textContent = severity === 2 ? '⚠️' : (severity === 1 ? '⚠' : '✅');
   aiStatusIcon.className = severity === 2 ? 'my-3 text-4xl text-red-600' :
