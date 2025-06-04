@@ -148,6 +148,7 @@ onAuthStateChanged(auth, async (user) => {
     authContainer.classList.remove('hidden');
     dashboard.classList.add('hidden');
     profileContainer.style.display = 'none';
+    if (profileUsername) profileUsername.textContent = '';
     currentUserData = null;
     lastMeasurement = null;
   }
