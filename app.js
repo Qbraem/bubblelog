@@ -158,7 +158,6 @@ const resultDiv = document.getElementById('result');
 const historyList = document.getElementById('history-list');
 const detailView = document.getElementById('detail-view');
 const detailContent = document.getElementById('detail-content');
-const filterDate = document.getElementById('filter-date');
 const aiAdviceBox = document.getElementById('ai-advice-box');
 const aiAdviceText = document.getElementById('ai-advice-text');
 const aiStatusArrow = document.getElementById('ai-status-arrow');
@@ -263,7 +262,6 @@ async function loadData(uid) {
   const labels = [];
   const phData = [];
   const co2Data = [];
-  const filter = filterDate.value;
 
   let firstMeasurement = null;
 
@@ -271,11 +269,6 @@ async function loadData(uid) {
     const d = docSnapshot.data();
     const docId = docSnapshot.id;
     const date = d.timestamp.toDate ? d.timestamp.toDate() : new Date(d.timestamp);
-    const dateStr = date.toISOString().split('T')[0];
-    if (filter && filter !== dateStr) return;
-
-    if (!firstMeasurement) firstMeasurement = d;
-
     labels.push(date.toLocaleDateString());
     phData.push(d.ph);
     co2Data.push(d.co2);
@@ -381,12 +374,9 @@ function showAIReport(measurement) {
   aiAdviceBox.style.backgroundColor = severity === 2 ? '#fee2e2' : (severity === 1 ? '#fef3c7' : '#d1fae5');
   aiAdviceText.textContent = text;
 
-  aiStatusArrow.style.display = 'block';
-  aiStatusArrow.style.height = '8px';
-  aiStatusArrow.style.width = '8px';
-  aiStatusArrow.style.borderRadius = '50%';
-  aiStatusArrow.style.margin = '10px auto';
-  aiStatusArrow.style.backgroundColor = severity === 2 ? '#dc2626' : (severity === 1 ? '#facc15' : '#10b981');
+  aiStatusArrow.style.display = "block";
+  aiStatusArrow.style.borderBottomColor = severity === 2 ? "#dc2626" : (severity === 1 ? "#facc15" : "#10b981");
+  aiStatusArrow.style.left = severity === 2 ? "80%" : (severity === 1 ? "50%" : "20%");
 
   aiStatusIcon.textContent = severity === 2 ? '⚠️' : (severity === 1 ? '⚠' : '✅');
   aiStatusIcon.className = severity === 2 ? 'my-3 text-4xl text-red-600' :
@@ -394,11 +384,6 @@ function showAIReport(measurement) {
                                            'my-3 text-4xl text-green-600';
 }
 
-
-filterDate.addEventListener('change', () => {
-  const user = auth.currentUser;
-  if (user) loadData(user.uid);
-});
 
 
 // Check History button functionality

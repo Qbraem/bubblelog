@@ -205,6 +205,23 @@
       color: #6b7280 !important; /* Tailwind gray-500 */
       pointer-events: none;
     }
+    #ai-status-meter {
+      position: relative;
+      height: 12px;
+      border-radius: 9999px;
+      overflow: hidden;
+      background: linear-gradient(to right, #10b981, #facc15 50%, #dc2626);
+    }
+    #ai-status-arrow {
+      position: absolute;
+      top: -6px;
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-bottom: 6px solid;
+      transform: translateX(-50%);
+    }
 
     /* Mobile consistency fixes */
     @media (max-width: 600px) {
@@ -253,7 +270,6 @@
         flex-direction: column !important;
         gap: 1rem !important;
       }
-      #filter-container {
         width: 100% !important;
       }
 
@@ -287,9 +303,9 @@
       </div>
 
       <div id="profile-name-dropdown" tabindex="0" aria-haspopup="true" aria-expanded="false" role="button" aria-controls="profile-dropdown" class="flex items-center cursor-pointer select-none ml-auto gap-2">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true" aria-label="Settings icon">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0a1.724 1.724 0 002.602 1.086c.833-.58 1.797.197 1.431 1.1a1.724 1.724 0 001.462 2.457c.947.114 1.208 1.441.39 1.942a1.724 1.724 0 00.292 2.797c.818.442.34 1.842-.717 1.56a1.724 1.724 0 00-1.705 1.052c-.338.795-1.518.795-1.856 0a1.724 1.724 0 00-1.705-1.052c-1.057.282-1.536-1.118-.718-1.56a1.724 1.724 0 00.291-2.797c-.817-.5-1.24-1.828-.39-1.942a1.724 1.724 0 001.462-2.457c-.366-.903.598-1.68 1.431-1.1a1.724 1.724 0 002.602-1.086z" />
-        </svg>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" aria-hidden="true" aria-label="Settings icon">
+  <path d="M4.50073 11.9993C4.50073 16.1414 7.8586 19.4993 12.0007 19.4993C16.1429 19.4993 19.5007 16.1414 19.5007 11.9993M4.50073 11.9993C4.50073 7.85712 7.85864 4.49925 12.0007 4.49925C16.1429 4.49926 19.5007 7.85712 19.5007 11.9993M4.50073 11.9993L3.00073 11.9993M19.5007 11.9993L21.0007 11.9993M19.5007 11.9993L12.0007 11.9993M3.54329 15.0774L4.95283 14.5644M19.0482 9.43411L20.4578 8.92108M5.1062 17.785L6.25527 16.8208M17.7459 7.17897L18.895 6.21479M7.50064 19.7943L8.25064 18.4952M15.7506 5.50484L16.5006 4.2058M10.4378 20.8633L10.6983 19.386M13.303 4.61393L13.5635 3.13672M13.5635 20.8633L13.303 19.3861M10.6983 4.61397L10.4378 3.13676M16.5007 19.7941L15.7507 18.4951M7.50068 4.20565L12.0007 11.9993M18.8952 17.7843L17.7461 16.8202M6.25542 7.17835L5.10635 6.21417M20.458 15.0776L19.0485 14.5646M4.95308 9.43426L3.54354 8.92123M12.0007 11.9993L8.25073 18.4944"/>
+</svg>
         <svg xmlns="http://www.w3.org/2000/svg" id="profile-arrow" class="h-4 w-4 text-blue-700 transition-transform duration-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
         </svg>
@@ -385,10 +401,6 @@
         <div id="history" class="flex-1 bg-blue-50 rounded-xl p-4 text-sm text-blue-900 overflow-auto max-h-64 min-w-[260px]">
           <h3 class="text-lg font-semibold mb-2 text-blue-800">History</h3>
           <ul id="history-list" class="divide-y divide-blue-200 overflow-auto max-h-52"></ul>
-        </div>
-        <div id="filter-container" class="w-40 bg-white rounded-xl p-4 shadow-md text-sm text-blue-900 flex-shrink-0">
-          <label for="filter-date" class="block mb-1 font-medium">Filter by date</label>
-          <input type="date" id="filter-date" class="rounded-lg border border-blue-300 px-3 py-2 w-full text-sm" />
         </div>
       </div>
 
