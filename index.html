@@ -323,6 +323,13 @@
     </div>
   </nav>
 
+  <div id="language-container" class="fixed top-2 right-2 z-50 bg-white bg-opacity-80 rounded px-2 py-1">
+    <select id="language-select" class="border border-blue-300 rounded px-2 py-1 text-sm">
+      <option value="en">English</option>
+      <option value="nl">Nederlands</option>
+    </select>
+  </div>
+
   <section id="header-section" aria-label="Welcome header">
     <p>Welcome to</p>
     <h1 class="logo-font">BubbleLog</h1>
@@ -333,11 +340,11 @@
     <div class="bubble" style="left:90%; animation-delay:3s;"></div>
   </section>
 
-  <section id="welcome-info" class="max-w-xl mx-auto mt-4 bg-blue-50 text-blue-900 p-4 rounded-xl shadow text-center">
-    <p class="mb-2">BubbleLog helpt je de waterkwaliteit van je aquarium bij te houden en trends te zien.</p>
-    <p class="mb-2">Voeg regelmatig je metingen toe zodat we nauwkeurige grafieken en inzichten kunnen tonen.</p>
-    <p class="mb-2">We testen momenteel een nieuwe AI-functie die advies geeft op basis van jouw gegevens.</p>
-    <button id="welcome-dismiss" class="mt-2 px-4 py-1 bg-blue-200 rounded-full text-blue-800 hover:bg-blue-300">Sluiten</button>
+  <section id="welcome-info" class="max-w-xl mx-auto mt-4 mb-4 bg-white text-blue-900 p-6 rounded-2xl shadow-lg text-center relative">
+    <button id="welcome-dismiss" class="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 text-2xl cursor-pointer" aria-label="Close welcome message">&times;</button>
+    <p id="welcome-line1" class="mb-3">BubbleLog helps you monitor your aquarium's water quality and spot trends.</p>
+    <p id="welcome-line2" class="mb-3">Add your measurements regularly so we can provide accurate graphs and insights.</p>
+    <p id="welcome-line3">We are currently testing a new AI feature that offers advice based on your data.</p>
   </section>
 
   <main>
