@@ -323,7 +323,6 @@ async function loadData(uid) {
 
   if (firstMeasurement) {
     lastMeasurement = firstMeasurement;
-    showAIReport(lastMeasurement);
   } else {
     lastMeasurement = null;
     aiAdviceBox.classList.remove('disabled');
@@ -333,6 +332,8 @@ async function loadData(uid) {
     aiStatusIcon.textContent = '⏳';
     aiStatusIcon.className = 'text-gray-500 my-3 text-4xl';
   }
+
+  if (lastMeasurement) showAIReport(lastMeasurement);
 
   updateOrCreateChart('chart', labels, phData, 'pH', 'rgba(59, 130, 246, 1)');
   updateOrCreateChart('chart-co2', labels, co2Data, 'CO₂ (mg/L)', 'rgba(34, 197, 94, 1)');
