@@ -328,7 +328,7 @@ async function loadData(uid) {
     lastMeasurement = null;
     aiAdviceBox.classList.remove('disabled');
     aiAdviceBox.style.backgroundColor = '#e0e0e0';
-    aiAdviceText.textContent = "This feature will be available in a future version.";
+    aiAdviceText.textContent = "AI advice appears after your first measurement.";
     aiStatusArrow.style.display = 'none';
     aiStatusIcon.textContent = '⏳';
     aiStatusIcon.className = 'text-gray-500 my-3 text-4xl';
