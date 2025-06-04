@@ -401,11 +401,3 @@ filterDate.addEventListener('change', () => {
 });
 
 
-// Check History button functionality
-const checkHistoryBtn = document.getElementById('check-history-btn');
-checkHistoryBtn.addEventListener('click', () => {
-  const user = auth.currentUser;
-  if (user) {
-    loadData(user.uid);
-  }
-});
