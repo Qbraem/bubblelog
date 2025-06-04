@@ -274,7 +274,7 @@ async function loadData(uid) {
     const dateStr = date.toISOString().split('T')[0];
     if (filter && filter !== dateStr) return;
 
-    if (index === 0) firstMeasurement = d;
+    if (!firstMeasurement) firstMeasurement = d;
 
     labels.push(date.toLocaleDateString());
     phData.push(d.ph);
@@ -323,7 +323,6 @@ async function loadData(uid) {
 
   if (firstMeasurement) {
     lastMeasurement = firstMeasurement;
-    showAIReport(firstMeasurement);
     showAIReport(lastMeasurement);
   } else {
     lastMeasurement = null;
