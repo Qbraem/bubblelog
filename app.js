@@ -135,12 +135,12 @@ onAuthStateChanged(auth, async (user) => {
       if (!profileDoc.empty) {
         const data = profileDoc.docs[0].data();
         currentUserData = data;
-        profileUsername.textContent = data.username || user.email;
+        if (profileUsername) profileUsername.textContent = data.username || user.email;
       } else {
-        profileUsername.textContent = user.email;
+        if (profileUsername) profileUsername.textContent = user.email;
       }
     } catch {
-      profileUsername.textContent = user.email;
+      if (profileUsername) profileUsername.textContent = user.email;
     }
 
     loadData(user.uid);
