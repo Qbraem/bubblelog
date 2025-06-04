@@ -108,6 +108,10 @@ logoutButton.addEventListener('click', async () => {
   await signOut(auth);
 });
 
+contactDeveloper.addEventListener('click', () => {
+  window.location.href = 'mailto:developer@example.com';
+});
+
 profileToggle.addEventListener('click', () => {
   const isShown = profileDropdown.classList.toggle('show');
   document.getElementById('profile-arrow').style.transform = isShown ? 'rotate(180deg)' : 'rotate(0deg)';
