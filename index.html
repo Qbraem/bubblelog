@@ -4,11 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>BubbleLog</title>
-  <link rel="apple-touch-icon" href="apple-touch-icon.png" />
-  <link rel="manifest" href="manifest.json" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-  <meta name="theme-color" content="#2563eb" />
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -303,10 +298,6 @@
   </style>
 </head>
 <body>
-  <div id="ios-install" class="hidden fixed bottom-0 left-0 right-0 bg-blue-600 text-white text-sm p-3 flex items-center justify-center z-50">
-    Tap 'Share' → 'Add to Home Screen' to use BubbleLog as an app on your device!
-    <button id="ios-install-close" class="ml-3 text-white text-2xl leading-none px-2 py-1 rounded-full hover:bg-blue-700 focus:outline-none" aria-label="Close banner">&times;</button>
-  </div>
   <nav>
     <div id="profile-container" role="navigation" aria-label="Main Navigation">
       <div class="logo-font flex items-center gap-2" aria-label="App logo">
@@ -441,22 +432,7 @@
     Indie app developed in Belgium by <span class="text-blue-600">Quinten Braem</span>, with a little help from AI.<br />
     <small class="text-gray-600">App Version 1.0</small>
   </footer>
-
   <script type="module" src="app.js"></script>
-  <script>
-    window.showIosBanner = function() {
-      const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
-      const isInStandalone = window.navigator.standalone === true;
-      if (isIos && !isInStandalone && !localStorage.getItem('iosBannerDismissed')) {
-        const banner = document.getElementById('ios-install');
-        const closeBtn = document.getElementById('ios-install-close');
-        banner.classList.remove('hidden');
-        closeBtn.addEventListener('click', () => {
-          banner.classList.add('hidden');
-          localStorage.setItem('iosBannerDismissed', 'true');
-        }, { once: true });
-      }
-    };
-  </script>
+
 </body>
 </html>
