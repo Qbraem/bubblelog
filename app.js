@@ -42,41 +42,9 @@ const profileToggle = document.getElementById('profile-name-dropdown');
 const profileDropdown = document.getElementById('profile-dropdown');
 const profileUsername = document.getElementById('profile-username');
 const contactDeveloper = document.getElementById('contact-developer');
-const languageSelect = document.getElementById('language-select');
 const extraRegisterFields = document.getElementById('extra-register-fields');
 const welcomeInfo = document.getElementById('welcome-info');
 const welcomeDismiss = document.getElementById('welcome-dismiss');
-const welcomeLine1 = document.getElementById('welcome-line1');
-const welcomeLine2 = document.getElementById('welcome-line2');
-const welcomeLine3 = document.getElementById('welcome-line3');
-
-const translations = {
-  en: {
-    line1: "BubbleLog helps you monitor your aquarium's water quality and spot trends.",
-    line2: "Add your measurements regularly so we can provide accurate graphs and insights.",
-    line3: "We are currently testing a new AI feature that offers advice based on your data."
-  },
-  nl: {
-    line1: "BubbleLog helpt je de waterkwaliteit van je aquarium bij te houden en trends te zien.",
-    line2: "Voeg regelmatig je metingen toe zodat we nauwkeurige grafieken en inzichten kunnen tonen.",
-    line3: "We testen momenteel een nieuwe AI-functie die advies geeft op basis van jouw gegevens."
-  }
-};
-
-function setLanguage(lang) {
-  const t = translations[lang] || translations.en;
-  welcomeLine1.textContent = t.line1;
-  welcomeLine2.textContent = t.line2;
-  welcomeLine3.textContent = t.line3;
-  if (languageSelect) languageSelect.value = lang;
-  localStorage.setItem('lang', lang);
-}
-
-const savedLang = localStorage.getItem('lang') || 'en';
-if (languageSelect) {
-  languageSelect.addEventListener('change', (e) => setLanguage(e.target.value));
-  setLanguage(savedLang);
-}
 
 let isRegister = false;
 let currentUserData = null;
