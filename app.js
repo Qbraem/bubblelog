@@ -72,7 +72,6 @@ function updateWelcomeTexts() {
 
 updateWelcomeTexts();
 updateAuthTexts();
-let currentLang = 'en';
 
 let isRegister = false;
 let currentUserData = null;
