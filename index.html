@@ -21,7 +21,7 @@
 
     nav {
       width: 100%;
-      background: white;
+      background: rgba(255, 255, 255, 0.9);
       border-bottom: 1px solid #e5e7eb;
       position: fixed;
       top: 0;
@@ -29,6 +29,8 @@
       z-index: 9999;
       display: flex;
       justify-content: center;
+      backdrop-filter: blur(4px);
+      box-shadow: 0 1px 4px rgb(0 0 0 / 0.05);
     }
     #profile-container {
       max-width: 960px;
@@ -37,7 +39,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 0.75rem 1rem;
-      color: #1e40af;
+      color: #1e3a8a;
       position: relative;
       font-family: 'Raleway', sans-serif;
       font-weight: 700;
@@ -56,7 +58,7 @@
       align-items: center;
       gap: 0.25rem;
       cursor: pointer;
-      color: #1e40af;
+      color: #1e3a8a;
       user-select: none;
     }
 
@@ -65,7 +67,7 @@
       align-items: center;
       gap: 0.25rem;
       cursor: pointer;
-      color: #1e40af;
+      color: #1e3a8a;
       user-select: none;
     }
 
@@ -237,16 +239,6 @@
     }
 
     /* Swimming fish */
-    #header-fish {
-      position: absolute;
-      bottom: 10px;
-      left: -80px;
-      animation: swim 12s linear infinite;
-    }
-
-    @keyframes swim {
-      from { transform: translateX(0); }
-      to { transform: translateX(calc(100vw + 160px)); }
     }
 
     /* AI advice box - disabled style */
@@ -404,18 +396,15 @@
       <circle cx="25" cy="16" r="3" fill="#1e3a8a" />
     </svg>
   </section>
-
-  <section id="welcome-info" class="max-w-xl mx-auto mt-4 mb-4 bg-white text-blue-900 p-6 rounded-2xl shadow-lg text-center relative">
     <button id="welcome-dismiss" class="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 text-2xl cursor-pointer" aria-label="Close welcome message">&times;</button>
     <p id="welcome-line1" class="mb-3">BubbleLog helps you monitor your aquarium's water quality and spot trends.</p>
     <p id="welcome-line2" class="mb-3">Add your measurements regularly so we can provide accurate graphs and insights.</p>
     <p id="welcome-line3">We are currently testing a new AI feature that offers advice based on your data.</p>
   </section>
-
   <main>
     <!-- Auth container -->
     <section id="auth-container">
-      <h2 class="text-xl font-semibold mb-4 text-center text-gray-800">Login or Register</h2>
+      <h2 id="auth-title" class="text-xl font-semibold mb-4 text-center text-gray-800">Login or Register</h2>
       <form id="auth-form" class="grid gap-4" autocomplete="off" novalidate>
         <div id="extra-register-fields" class="hidden grid grid-cols-2 gap-4">
           <input type="text" name="firstname" id="firstname" placeholder="First Name" class="border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" autocomplete="given-name" />
@@ -439,7 +428,7 @@
 
     <!-- Dashboard container -->
     <section id="dashboard" class="hidden">
-      <h2 class="text-xl font-semibold mb-4 text-center text-blue-700">Your Measurements</h2>
+      <h2 id="measure-title" class="text-xl font-semibold mb-4 text-center text-blue-700">Your Measurements</h2>
       <form id="data-form" class="grid gap-3 mb-6" autocomplete="off" novalidate>
         <div class="grid grid-cols-2 gap-2 text-gray-700 text-xs font-semibold">
           <label for="ph" class="flex items-center gap-1"><span>pH</span><span>(unitless)</span></label>

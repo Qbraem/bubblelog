@@ -57,12 +57,28 @@ const translations = {
   en: {
     line1: "BubbleLog helps you monitor your aquarium's water quality and spot trends.",
     line2: "Add your measurements regularly so we can provide accurate graphs and insights.",
-    line3: "We are currently testing a new AI feature that offers advice based on your data."
+    line3: "We are currently testing a new AI feature that offers advice based on your data.",
+    logout: "Logout",
+    contact: "Contact Developer",
+    loginHeading: "Login or Register",
+    loginBtn: "Login",
+    registerBtn: "Register",
+    toggleToRegister: "Don't have an account? Register",
+    toggleToLogin: "Already have an account? Login",
+    measurementsTitle: "Your Measurements"
   },
   nl: {
     line1: "BubbleLog helpt je de waterkwaliteit van je aquarium bij te houden en trends te zien.",
     line2: "Voeg regelmatig je metingen toe zodat we nauwkeurige grafieken en inzichten kunnen tonen.",
-    line3: "We testen momenteel een nieuwe AI-functie die advies geeft op basis van jouw gegevens."
+    line3: "We testen momenteel een nieuwe AI-functie die advies geeft op basis van jouw gegevens.",
+    logout: "Uitloggen",
+    contact: "Ontwikkelaar contacteren",
+    loginHeading: "Inloggen of Registreren",
+    loginBtn: "Inloggen",
+    registerBtn: "Registreren",
+    toggleToRegister: "Nog geen account? Registreren",
+    toggleToLogin: "Reeds een account? Inloggen",
+    measurementsTitle: "Jouw Metingen"
   }
 };
 
@@ -71,8 +87,10 @@ function setLanguage(lang) {
   welcomeLine1.textContent = t.line1;
   welcomeLine2.textContent = t.line2;
   welcomeLine3.textContent = t.line3;
+  
   if (languageCurrent) languageCurrent.textContent = lang.toUpperCase();
   localStorage.setItem('lang', lang);
+  currentLang = lang;
 }
 
 const savedLang = localStorage.getItem('lang') || 'en';
@@ -110,6 +128,12 @@ let isRegister = false;
 let currentUserData = null;
 let lastMeasurement = null;
 
+function updateAuthTexts(lang = currentLang) {
+  const t = translations[lang] || translations.en;
+  authSubmit.textContent = isRegister ? t.registerBtn : t.loginBtn;
+  toggleLink.textContent = isRegister ? t.toggleToLogin : t.toggleToRegister;
+}
+
 if (welcomeDismiss) {
   welcomeDismiss.addEventListener('click', () => {
     welcomeInfo.classList.add('hidden');
@@ -118,8 +142,7 @@ if (welcomeDismiss) {
 
 toggleLink.addEventListener('click', () => {
   isRegister = !isRegister;
-  authSubmit.textContent = isRegister ? 'Register' : 'Login';
-  toggleLink.textContent = isRegister ? 'Already have an account? Login' : "Don't have an account? Register";
+  updateAuthTexts();
 
   if (isRegister) {
     extraRegisterFields.classList.remove('hidden');
