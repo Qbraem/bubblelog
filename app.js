@@ -20,6 +20,15 @@ import {
   deleteDoc
 } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
+// Unregister any previously registered service workers
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    registrations.forEach((registration) => registration.unregister());
+  }).catch((err) => {
+    console.warn('Service worker unregister failed:', err);
+  });
+}
+
 const firebaseConfig = {
   apiKey: "AIzaSyCX7hc6IofjuJWUT2M11GkYRnD-XRfwmjA",
   authDomain: "bubblelog-2933c.firebaseapp.com",
