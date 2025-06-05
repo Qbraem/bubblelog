@@ -42,7 +42,10 @@ const profileToggle = document.getElementById('profile-name-dropdown');
 const profileDropdown = document.getElementById('profile-dropdown');
 const profileUsername = document.getElementById('profile-username');
 const contactDeveloper = document.getElementById('contact-developer');
-const languageSelect = document.getElementById('language-select');
+const languageMenu = document.getElementById('language-menu');
+const languageToggle = document.getElementById('language-toggle');
+const languageDropdown = document.getElementById('language-dropdown');
+const languageCurrent = document.getElementById('language-current');
 const extraRegisterFields = document.getElementById('extra-register-fields');
 const welcomeInfo = document.getElementById('welcome-info');
 const welcomeDismiss = document.getElementById('welcome-dismiss');
@@ -68,13 +71,38 @@ function setLanguage(lang) {
   welcomeLine1.textContent = t.line1;
   welcomeLine2.textContent = t.line2;
   welcomeLine3.textContent = t.line3;
-  if (languageSelect) languageSelect.value = lang;
+  if (languageCurrent) languageCurrent.textContent = lang.toUpperCase();
   localStorage.setItem('lang', lang);
 }
 
 const savedLang = localStorage.getItem('lang') || 'en';
-if (languageSelect) {
-  languageSelect.addEventListener('change', (e) => setLanguage(e.target.value));
+if (languageToggle) {
+  const arrow = document.getElementById('language-arrow');
+  languageToggle.addEventListener('click', () => {
+    const isShown = languageDropdown.classList.toggle('show');
+    arrow.style.transform = isShown ? 'rotate(180deg)' : 'rotate(0deg)';
+    languageToggle.setAttribute('aria-expanded', isShown);
+  });
+
+  languageDropdown.querySelectorAll('button[data-lang]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setLanguage(btn.dataset.lang);
+      languageDropdown.classList.remove('show');
+      arrow.style.transform = 'rotate(0deg)';
+      languageToggle.setAttribute('aria-expanded', false);
+    });
+  });
+
+  document.addEventListener('click', (ev) => {
+    if (!languageMenu.contains(ev.target)) {
+      if (languageDropdown.classList.contains('show')) {
+        languageDropdown.classList.remove('show');
+        arrow.style.transform = 'rotate(0deg)';
+        languageToggle.setAttribute('aria-expanded', false);
+      }
+    }
+  });
+
   setLanguage(savedLang);
 }
 
