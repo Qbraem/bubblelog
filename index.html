@@ -305,7 +305,7 @@
 <body>
   <div id="ios-install" class="hidden fixed bottom-0 left-0 right-0 bg-blue-600 text-white text-sm p-3 flex items-center justify-center z-50">
     Tap 'Share' → 'Add to Home Screen' to use BubbleLog as an app on your device!
-    <button id="ios-install-close" class="ml-3 text-white">&times;</button>
+    <button id="ios-install-close" class="ml-3 text-white text-2xl leading-none px-2 py-1 rounded-full hover:bg-blue-700 focus:outline-none" aria-label="Close banner">&times;</button>
   </div>
   <nav>
     <div id="profile-container" role="navigation" aria-label="Main Navigation">
@@ -444,17 +444,19 @@
 
   <script type="module" src="app.js"></script>
   <script>
-    function showIosBanner() {
+    window.showIosBanner = function() {
       const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
       const isInStandalone = window.navigator.standalone === true;
-      if (isIos && !isInStandalone) {
+      if (isIos && !isInStandalone && !localStorage.getItem('iosBannerDismissed')) {
         const banner = document.getElementById('ios-install');
         const closeBtn = document.getElementById('ios-install-close');
         banner.classList.remove('hidden');
-        closeBtn.addEventListener('click', () => banner.classList.add('hidden'));
+        closeBtn.addEventListener('click', () => {
+          banner.classList.add('hidden');
+          localStorage.setItem('iosBannerDismissed', 'true');
+        }, { once: true });
       }
-    }
-    window.addEventListener('load', showIosBanner);
+    };
   </script>
 </body>
 </html>
