@@ -161,7 +161,6 @@ onAuthStateChanged(auth, async (user) => {
     dashboard.classList.remove('hidden');
     if (welcomeInfo) welcomeInfo.classList.remove('hidden');
     profileContainer.style.display = 'flex';
-    if (window.showIosBanner) window.showIosBanner();
 
     try {
       const profileDoc = await getDocs(query(collection(db, `users/${user.uid}/profile`)));
@@ -436,12 +435,5 @@ filterDate.addEventListener('change', () => {
   if (user) loadData(user.uid);
 });
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js').catch((err) => {
-      console.error('ServiceWorker registration failed:', err);
-    });
-  });
-}
 
 
