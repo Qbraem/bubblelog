@@ -94,6 +94,7 @@ function setLanguage(lang) {
 }
 
 const savedLang = localStorage.getItem('lang') || 'en';
+let currentLang = savedLang;
 if (languageToggle) {
   const arrow = document.getElementById('language-arrow');
   languageToggle.addEventListener('click', () => {
@@ -122,6 +123,7 @@ if (languageToggle) {
   });
 
   setLanguage(savedLang);
+  updateAuthTexts(savedLang);
 }
 
 let isRegister = false;
