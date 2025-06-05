@@ -42,7 +42,10 @@ const profileToggle = document.getElementById('profile-name-dropdown');
 const profileDropdown = document.getElementById('profile-dropdown');
 const profileUsername = document.getElementById('profile-username');
 const contactDeveloper = document.getElementById('contact-developer');
-const languageSelect = document.getElementById('language-select');
+const languageMenu = document.getElementById('language-menu');
+const languageToggle = document.getElementById('language-toggle');
+const languageDropdown = document.getElementById('language-dropdown');
+const languageCurrent = document.getElementById('language-current');
 const extraRegisterFields = document.getElementById('extra-register-fields');
 const welcomeInfo = document.getElementById('welcome-info');
 const welcomeDismiss = document.getElementById('welcome-dismiss');
@@ -54,12 +57,28 @@ const translations = {
   en: {
     line1: "BubbleLog helps you monitor your aquarium's water quality and spot trends.",
     line2: "Add your measurements regularly so we can provide accurate graphs and insights.",
-    line3: "We are currently testing a new AI feature that offers advice based on your data."
+    line3: "We are currently testing a new AI feature that offers advice based on your data.",
+    logout: "Logout",
+    contact: "Contact Developer",
+    loginHeading: "Login or Register",
+    loginBtn: "Login",
+    registerBtn: "Register",
+    toggleToRegister: "Don't have an account? Register",
+    toggleToLogin: "Already have an account? Login",
+    measurementsTitle: "Your Measurements"
   },
   nl: {
     line1: "BubbleLog helpt je de waterkwaliteit van je aquarium bij te houden en trends te zien.",
     line2: "Voeg regelmatig je metingen toe zodat we nauwkeurige grafieken en inzichten kunnen tonen.",
-    line3: "We testen momenteel een nieuwe AI-functie die advies geeft op basis van jouw gegevens."
+    line3: "We testen momenteel een nieuwe AI-functie die advies geeft op basis van jouw gegevens.",
+    logout: "Uitloggen",
+    contact: "Ontwikkelaar contacteren",
+    loginHeading: "Inloggen of Registreren",
+    loginBtn: "Inloggen",
+    registerBtn: "Registreren",
+    toggleToRegister: "Nog geen account? Registreren",
+    toggleToLogin: "Reeds een account? Inloggen",
+    measurementsTitle: "Jouw Metingen"
   }
 };
 
@@ -68,19 +87,57 @@ function setLanguage(lang) {
   welcomeLine1.textContent = t.line1;
   welcomeLine2.textContent = t.line2;
   welcomeLine3.textContent = t.line3;
-  if (languageSelect) languageSelect.value = lang;
+  document.getElementById('auth-title').textContent = t.loginHeading;
+  document.getElementById('measure-title').textContent = t.measurementsTitle;
+  logoutButton.textContent = t.logout;
+  contactDeveloper.textContent = t.contact;
+  updateAuthTexts(lang);
+  if (languageCurrent) languageCurrent.textContent = lang.toUpperCase();
   localStorage.setItem('lang', lang);
+  currentLang = lang;
 }
 
 const savedLang = localStorage.getItem('lang') || 'en';
-if (languageSelect) {
-  languageSelect.addEventListener('change', (e) => setLanguage(e.target.value));
+let currentLang = savedLang;
+if (languageToggle) {
+  const arrow = document.getElementById('language-arrow');
+  languageToggle.addEventListener('click', () => {
+    const isShown = languageDropdown.classList.toggle('show');
+    arrow.style.transform = isShown ? 'rotate(180deg)' : 'rotate(0deg)';
+    languageToggle.setAttribute('aria-expanded', isShown);
+  });
+
+  languageDropdown.querySelectorAll('button[data-lang]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      setLanguage(btn.dataset.lang);
+      languageDropdown.classList.remove('show');
+      arrow.style.transform = 'rotate(0deg)';
+      languageToggle.setAttribute('aria-expanded', false);
+    });
+  });
+
+  document.addEventListener('click', (ev) => {
+    if (!languageMenu.contains(ev.target)) {
+      if (languageDropdown.classList.contains('show')) {
+        languageDropdown.classList.remove('show');
+        arrow.style.transform = 'rotate(0deg)';
+        languageToggle.setAttribute('aria-expanded', false);
+      }
+    }
+  });
+
   setLanguage(savedLang);
 }
 
 let isRegister = false;
 let currentUserData = null;
 let lastMeasurement = null;
+
+function updateAuthTexts(lang = currentLang) {
+  const t = translations[lang] || translations.en;
+  authSubmit.textContent = isRegister ? t.registerBtn : t.loginBtn;
+  toggleLink.textContent = isRegister ? t.toggleToLogin : t.toggleToRegister;
+}
 
 if (welcomeDismiss) {
   welcomeDismiss.addEventListener('click', () => {
@@ -90,8 +147,7 @@ if (welcomeDismiss) {
 
 toggleLink.addEventListener('click', () => {
   isRegister = !isRegister;
-  authSubmit.textContent = isRegister ? 'Register' : 'Login';
-  toggleLink.textContent = isRegister ? 'Already have an account? Login' : "Don't have an account? Register";
+  updateAuthTexts();
 
   if (isRegister) {
     extraRegisterFields.classList.remove('hidden');
