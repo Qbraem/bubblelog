@@ -4,9 +4,7 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signOut,
-  setPersistence,
-  browserLocalPersistence
+  signOut
 } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
 import {
   getFirestore,
@@ -20,15 +18,6 @@ import {
   deleteDoc
 } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-firestore.js";
 
-// Unregister any previously registered service workers
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.getRegistrations().then((registrations) => {
-    registrations.forEach((registration) => registration.unregister());
-  }).catch((err) => {
-    console.warn('Service worker unregister failed:', err);
-  });
-}
-
 const firebaseConfig = {
   apiKey: "AIzaSyCX7hc6IofjuJWUT2M11GkYRnD-XRfwmjA",
   authDomain: "bubblelog-2933c.firebaseapp.com",
@@ -40,10 +29,6 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-// Ensure authentication state persists when launched as a PWA on iOS
-setPersistence(auth, browserLocalPersistence).catch((err) => {
-  console.error('Auth persistence error:', err);
-});
 const db = getFirestore(app);
 
 const authContainer = document.getElementById('auth-container');
@@ -57,6 +42,7 @@ const profileToggle = document.getElementById('profile-name-dropdown');
 const profileDropdown = document.getElementById('profile-dropdown');
 const profileUsername = document.getElementById('profile-username');
 const contactDeveloper = document.getElementById('contact-developer');
+const languageSelect = document.getElementById('language-select');
 const extraRegisterFields = document.getElementById('extra-register-fields');
 const welcomeInfo = document.getElementById('welcome-info');
 const welcomeDismiss = document.getElementById('welcome-dismiss');
@@ -64,23 +50,37 @@ const welcomeLine1 = document.getElementById('welcome-line1');
 const welcomeLine2 = document.getElementById('welcome-line2');
 const welcomeLine3 = document.getElementById('welcome-line3');
 
-function updateWelcomeTexts() {
-  welcomeLine1.textContent = "BubbleLog helps you monitor your aquarium's water quality and spot trends.";
-  welcomeLine2.textContent = "Add your measurements regularly so we can provide accurate graphs and insights.";
-  welcomeLine3.textContent = "We are currently testing a new AI feature that offers advice based on your data.";
+const translations = {
+  en: {
+    line1: "BubbleLog helps you monitor your aquarium's water quality and spot trends.",
+    line2: "Add your measurements regularly so we can provide accurate graphs and insights.",
+    line3: "We are currently testing a new AI feature that offers advice based on your data."
+  },
+  nl: {
+    line1: "BubbleLog helpt je de waterkwaliteit van je aquarium bij te houden en trends te zien.",
+    line2: "Voeg regelmatig je metingen toe zodat we nauwkeurige grafieken en inzichten kunnen tonen.",
+    line3: "We testen momenteel een nieuwe AI-functie die advies geeft op basis van jouw gegevens."
+  }
+};
+
+function setLanguage(lang) {
+  const t = translations[lang] || translations.en;
+  welcomeLine1.textContent = t.line1;
+  welcomeLine2.textContent = t.line2;
+  welcomeLine3.textContent = t.line3;
+  if (languageSelect) languageSelect.value = lang;
+  localStorage.setItem('lang', lang);
 }
 
-updateWelcomeTexts();
-updateAuthTexts();
+const savedLang = localStorage.getItem('lang') || 'en';
+if (languageSelect) {
+  languageSelect.addEventListener('change', (e) => setLanguage(e.target.value));
+  setLanguage(savedLang);
+}
 
 let isRegister = false;
 let currentUserData = null;
 let lastMeasurement = null;
-
-function updateAuthTexts() {
-  authSubmit.textContent = isRegister ? 'Register' : 'Login';
-  toggleLink.textContent = isRegister ? 'Already have an account? Login' : "Don't have an account? Register";
-}
 
 if (welcomeDismiss) {
   welcomeDismiss.addEventListener('click', () => {
@@ -90,7 +90,8 @@ if (welcomeDismiss) {
 
 toggleLink.addEventListener('click', () => {
   isRegister = !isRegister;
-  updateAuthTexts();
+  authSubmit.textContent = isRegister ? 'Register' : 'Login';
+  toggleLink.textContent = isRegister ? 'Already have an account? Login' : "Don't have an account? Register";
 
   if (isRegister) {
     extraRegisterFields.classList.remove('hidden');
@@ -167,7 +168,6 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     authContainer.classList.add('hidden');
     dashboard.classList.remove('hidden');
-    if (welcomeInfo) welcomeInfo.classList.remove('hidden');
     profileContainer.style.display = 'flex';
 
     try {
@@ -187,7 +187,6 @@ onAuthStateChanged(auth, async (user) => {
   } else {
     authContainer.classList.remove('hidden');
     dashboard.classList.add('hidden');
-    if (welcomeInfo) welcomeInfo.classList.add('hidden');
     profileContainer.style.display = 'none';
     if (profileUsername) profileUsername.textContent = '';
     currentUserData = null;
@@ -442,6 +441,5 @@ filterDate.addEventListener('change', () => {
   const user = auth.currentUser;
   if (user) loadData(user.uid);
 });
-
 
 

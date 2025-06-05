@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>BubbleLog</title>
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
@@ -20,7 +21,7 @@
 
     nav {
       width: 100%;
-      background: rgba(255, 255, 255, 0.9);
+      background: white;
       border-bottom: 1px solid #e5e7eb;
       position: fixed;
       top: 0;
@@ -28,8 +29,6 @@
       z-index: 9999;
       display: flex;
       justify-content: center;
-      backdrop-filter: blur(4px);
-      box-shadow: 0 1px 4px rgb(0 0 0 / 0.05);
     }
     #profile-container {
       max-width: 960px;
@@ -38,7 +37,7 @@
       justify-content: space-between;
       align-items: center;
       padding: 0.75rem 1rem;
-      color: #1e3a8a;
+      color: #1e40af;
       position: relative;
       font-family: 'Raleway', sans-serif;
       font-weight: 700;
@@ -53,14 +52,14 @@
     }
 
     #profile-name-dropdown {
+      margin-left: auto;
       display: flex;
       align-items: center;
       gap: 0.25rem;
       cursor: pointer;
-      color: #1e3a8a;
+      color: #1e40af;
       user-select: none;
     }
-
 
     #profile-dropdown {
       position: absolute;
@@ -203,8 +202,6 @@
       100% { transform: translateY(-200px); opacity: 0; }
     }
 
-
-
     /* AI advice box - disabled style */
     #ai-advice-box.disabled {
       background-color: #e0e0e0 !important;
@@ -309,8 +306,7 @@
         <span class="text-xl font-bold text-blue-700 select-none">BubbleLog</span>
       </div>
 
-      <div id="menu-wrapper" class="flex items-center ml-auto gap-4">
-        <div id="profile-name-dropdown" tabindex="0" aria-haspopup="true" aria-expanded="false" role="button" aria-controls="profile-dropdown" class="flex items-center cursor-pointer select-none gap-1 pr-1 text-blue-700">
+      <div id="profile-name-dropdown" tabindex="0" aria-haspopup="true" aria-expanded="false" role="button" aria-controls="profile-dropdown" class="flex items-center cursor-pointer select-none ml-auto gap-1 pr-1">
         <svg xmlns="http://www.w3.org/2000/svg" class="settings-icon text-blue-700" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" aria-label="Settings icon">
           <path fill-rule="evenodd" d="M11.078 2.25c-.917 0-1.699.663-1.85 1.567L9.05 4.889c-.02.12-.115.26-.297.348a7.493 7.493 0 0 0-.986.57c-.166.115-.334.126-.45.083L6.3 5.508a1.875 1.875 0 0 0-2.282.819l-.922 1.597a1.875 1.875 0 0 0 .432 2.385l.84.692c.095.078.17.229.154.43a7.598 7.598 0 0 0 0 1.139c.015.2-.059.352-.153.43l-.841.692a1.875 1.875 0 0 0-.432 2.385l.922 1.597a1.875 1.875 0 0 0 2.282.818l1.019-.382c.115-.043.283-.031.45.082.312.214.641.405.985.57.182.088.277.228.297.35l.178 1.071c.151.904.933 1.567 1.85 1.567h1.844c.916 0 1.699-.663 1.85-1.567l.178-1.072c.02-.12.114-.26.297-.349.344-.165.673-.356.985-.57.167-.114.335-.125.45-.082l1.02.382a1.875 1.875 0 0 0 2.28-.819l.923-1.597a1.875 1.875 0 0 0-.432-2.385l-.84-.692c-.095-.078-.17-.229-.154-.43a7.614 7.614 0 0 0 0-1.139c-.016-.2.059-.352.153-.43l.84-.692c.708-.582.891-1.59.433-2.385l-.922-1.597a1.875 1.875 0 0 0-2.282-.818l-1.02.382c-.114.043-.282.031-.449-.083a7.49 7.49 0 0 0-.985-.57c-.183-.087-.277-.227-.297-.348l-.179-1.072a1.875 1.875 0 0 0-1.85-1.567h-1.843ZM12 15.75a3.75 3.75 0 1 0 0-7.5 3.75 3.75 0 0 0 0 7.5Z" clip-rule="evenodd"/>
         </svg>
@@ -325,8 +321,14 @@
         <button id="contact-developer" role="menuitem" class="block w-full text-left px-4 py-2 hover:bg-blue-100 focus:outline-none">Contact Developer</button>
       </div>
     </div>
-  </div>
   </nav>
+
+  <div id="language-container" class="fixed top-2 right-2 z-50 bg-white bg-opacity-80 rounded px-2 py-1">
+    <select id="language-select" class="border border-blue-300 rounded px-2 py-1 text-sm">
+      <option value="en">English</option>
+      <option value="nl">Nederlands</option>
+    </select>
+  </div>
 
   <section id="header-section" aria-label="Welcome header">
     <p>Welcome to</p>
@@ -337,16 +339,18 @@
     <div class="bubble" style="left:70%; animation-delay:1s;"></div>
     <div class="bubble" style="left:90%; animation-delay:3s;"></div>
   </section>
-  <section id="welcome-info" class="hidden relative max-w-xl mx-auto bg-white bg-opacity-80 rounded-xl p-4 text-gray-900">
-    <button id="welcome-dismiss" class="absolute top-2 right-2 p-2 text-gray-400 hover:text-gray-600 text-2xl cursor-pointer" aria-label="Close welcome message">&times;</button>
+
+  <section id="welcome-info" class="max-w-xl mx-auto mt-4 mb-4 bg-white text-blue-900 p-6 rounded-2xl shadow-lg text-center relative">
+    <button id="welcome-dismiss" class="absolute top-4 right-4 p-2 text-gray-400 hover:text-gray-600 text-2xl cursor-pointer" aria-label="Close welcome message">&times;</button>
     <p id="welcome-line1" class="mb-3">BubbleLog helps you monitor your aquarium's water quality and spot trends.</p>
     <p id="welcome-line2" class="mb-3">Add your measurements regularly so we can provide accurate graphs and insights.</p>
     <p id="welcome-line3">We are currently testing a new AI feature that offers advice based on your data.</p>
   </section>
+
   <main>
     <!-- Auth container -->
     <section id="auth-container">
-      <h2 id="auth-title" class="text-xl font-semibold mb-4 text-center text-gray-800">Login or Register</h2>
+      <h2 class="text-xl font-semibold mb-4 text-center text-gray-800">Login or Register</h2>
       <form id="auth-form" class="grid gap-4" autocomplete="off" novalidate>
         <div id="extra-register-fields" class="hidden grid grid-cols-2 gap-4">
           <input type="text" name="firstname" id="firstname" placeholder="First Name" class="border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" autocomplete="given-name" />
@@ -364,13 +368,13 @@
         <input type="email" name="email" placeholder="Email" class="w-full border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" required autocomplete="email" />
         <input type="password" name="password" placeholder="Password" class="w-full border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400" required autocomplete="current-password" />
         <button id="auth-submit" type="submit">Login</button>
-        <button id="toggle-link" type="button" class="text-sm text-center text-blue-600 underline w-full">Don't have an account? Register</button>
+        <p class="text-sm text-center text-blue-600 cursor-pointer" id="toggle-link">Don't have an account? Register</p>
       </form>
     </section>
 
     <!-- Dashboard container -->
     <section id="dashboard" class="hidden">
-      <h2 id="measure-title" class="text-xl font-semibold mb-4 text-center text-blue-700">Your Measurements</h2>
+      <h2 class="text-xl font-semibold mb-4 text-center text-blue-700">Your Measurements</h2>
       <form id="data-form" class="grid gap-3 mb-6" autocomplete="off" novalidate>
         <div class="grid grid-cols-2 gap-2 text-gray-700 text-xs font-semibold">
           <label for="ph" class="flex items-center gap-1"><span>pH</span><span>(unitless)</span></label>
@@ -432,7 +436,7 @@
     Indie app developed in Belgium by <span class="text-blue-600">Quinten Braem</span>, with a little help from AI.<br />
     <small class="text-gray-600">App Version 1.0</small>
   </footer>
-  <script type="module" src="app.js"></script>
 
+  <script type="module" src="app.js"></script>
 </body>
 </html>
