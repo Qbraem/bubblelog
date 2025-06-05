@@ -155,6 +155,7 @@ onAuthStateChanged(auth, async (user) => {
     dashboard.classList.remove('hidden');
     if (welcomeInfo) welcomeInfo.classList.remove('hidden');
     profileContainer.style.display = 'flex';
+    if (window.showIosBanner) window.showIosBanner();
 
     try {
       const profileDoc = await getDocs(query(collection(db, `users/${user.uid}/profile`)));
