@@ -4,7 +4,9 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
-  signOut
+  signOut,
+  setPersistence,
+  browserLocalPersistence
 } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js";
 import {
   getFirestore,
@@ -29,6 +31,10 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+// Ensure authentication state persists when launched as a PWA on iOS
+setPersistence(auth, browserLocalPersistence).catch((err) => {
+  console.error('Auth persistence error:', err);
+});
 const db = getFirestore(app);
 
 const authContainer = document.getElementById('auth-container');
