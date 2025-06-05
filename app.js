@@ -219,6 +219,7 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     authContainer.classList.add('hidden');
     dashboard.classList.remove('hidden');
+    if (welcomeInfo) welcomeInfo.classList.remove('hidden');
     profileContainer.style.display = 'flex';
 
     try {
@@ -238,6 +239,7 @@ onAuthStateChanged(auth, async (user) => {
   } else {
     authContainer.classList.remove('hidden');
     dashboard.classList.add('hidden');
+    if (welcomeInfo) welcomeInfo.classList.add('hidden');
     profileContainer.style.display = 'none';
     if (profileUsername) profileUsername.textContent = '';
     currentUserData = null;
