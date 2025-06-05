@@ -87,18 +87,13 @@ function setLanguage(lang) {
   welcomeLine1.textContent = t.line1;
   welcomeLine2.textContent = t.line2;
   welcomeLine3.textContent = t.line3;
-  document.getElementById('auth-title').textContent = t.loginHeading;
-  document.getElementById('measure-title').textContent = t.measurementsTitle;
-  logoutButton.textContent = t.logout;
-  contactDeveloper.textContent = t.contact;
-  updateAuthTexts(lang);
+  
   if (languageCurrent) languageCurrent.textContent = lang.toUpperCase();
   localStorage.setItem('lang', lang);
   currentLang = lang;
 }
 
 const savedLang = localStorage.getItem('lang') || 'en';
-let currentLang = savedLang;
 if (languageToggle) {
   const arrow = document.getElementById('language-arrow');
   languageToggle.addEventListener('click', () => {
