@@ -45,28 +45,10 @@ const contactDeveloper = document.getElementById('contact-developer');
 const extraRegisterFields = document.getElementById('extra-register-fields');
 const welcomeInfo = document.getElementById('welcome-info');
 const welcomeDismiss = document.getElementById('welcome-dismiss');
-const welcomeLine1 = document.getElementById('welcome-line1');
-const welcomeLine2 = document.getElementById('welcome-line2');
-const welcomeLine3 = document.getElementById('welcome-line3');
-
-function updateWelcomeTexts() {
-  welcomeLine1.textContent = "BubbleLog helps you monitor your aquarium's water quality and spot trends.";
-  welcomeLine2.textContent = "Add your measurements regularly so we can provide accurate graphs and insights.";
-  welcomeLine3.textContent = "We are currently testing a new AI feature that offers advice based on your data.";
-}
-
-updateWelcomeTexts();
-updateAuthTexts();
-let currentLang = 'en';
 
 let isRegister = false;
 let currentUserData = null;
 let lastMeasurement = null;
-
-function updateAuthTexts() {
-  authSubmit.textContent = isRegister ? 'Register' : 'Login';
-  toggleLink.textContent = isRegister ? 'Already have an account? Login' : "Don't have an account? Register";
-}
 
 if (welcomeDismiss) {
   welcomeDismiss.addEventListener('click', () => {
@@ -76,7 +58,8 @@ if (welcomeDismiss) {
 
 toggleLink.addEventListener('click', () => {
   isRegister = !isRegister;
-  updateAuthTexts();
+  authSubmit.textContent = isRegister ? 'Register' : 'Login';
+  toggleLink.textContent = isRegister ? 'Already have an account? Login' : "Don't have an account? Register";
 
   if (isRegister) {
     extraRegisterFields.classList.remove('hidden');
@@ -153,9 +136,7 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     authContainer.classList.add('hidden');
     dashboard.classList.remove('hidden');
-    if (welcomeInfo) welcomeInfo.classList.remove('hidden');
     profileContainer.style.display = 'flex';
-    if (window.showIosBanner) window.showIosBanner();
 
     try {
       const profileDoc = await getDocs(query(collection(db, `users/${user.uid}/profile`)));
@@ -174,7 +155,6 @@ onAuthStateChanged(auth, async (user) => {
   } else {
     authContainer.classList.remove('hidden');
     dashboard.classList.add('hidden');
-    if (welcomeInfo) welcomeInfo.classList.add('hidden');
     profileContainer.style.display = 'none';
     if (profileUsername) profileUsername.textContent = '';
     currentUserData = null;
@@ -429,13 +409,5 @@ filterDate.addEventListener('change', () => {
   const user = auth.currentUser;
   if (user) loadData(user.uid);
 });
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./service-worker.js').catch((err) => {
-      console.error('ServiceWorker registration failed:', err);
-    });
-  });
-}
 
 
