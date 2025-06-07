@@ -188,14 +188,15 @@ dataForm.addEventListener('submit', async (e) => {
   const chlorine = parseFloat(document.getElementById('chlorine').value);
   const nitrite = parseFloat(document.getElementById('nitrite').value);
   const nitrate = parseFloat(document.getElementById('nitrate').value);
+  const fe2 = parseFloat(document.getElementById('fe2').value);
   const co2 = Math.round(3 * kh * Math.pow(10, (7 - ph)));
 
-  lastMeasurement = { ph, gh, kh, chlorine, nitrite, nitrate, co2 };
+  lastMeasurement = { ph, gh, kh, chlorine, nitrite, nitrate, fe2, co2 };
 
   try {
     await addDoc(collection(db, `users/${user.uid}/measurements`), {
       timestamp: new Date(),
-      ph, gh, kh, chlorine, nitrite, nitrate, co2
+      ph, gh, kh, chlorine, nitrite, nitrate, fe2, co2
     });
 
     resultDiv.textContent = '';
@@ -294,7 +295,7 @@ async function loadData(uid) {
     li.className = "flex justify-between items-center py-2 hover:bg-blue-100 rounded px-2";
 
     const textSpan = document.createElement('span');
-    textSpan.textContent = date.toLocaleString();
+    textSpan.textContent = `${date.toLocaleString()} - Fe2: ${d.fe2 ?? '—'}`;
     textSpan.className = "cursor-pointer flex-grow";
     textSpan.onclick = () => {
       detailContent.innerHTML = `
@@ -305,6 +306,7 @@ async function loadData(uid) {
         <p><strong>Chlorine:</strong> ${d.chlorine ?? '—'}</p>
         <p><strong>Nitrite:</strong> ${d.nitrite ?? '—'}</p>
         <p><strong>Nitrate:</strong> ${d.nitrate ?? '—'}</p>
+        <p><strong>Fe2:</strong> ${d.fe2 ?? '—'}</p>
         <p><strong>Date:</strong> ${date.toLocaleDateString()}<br/><strong>Time:</strong> ${date.toLocaleTimeString()}</p>
       `;
       detailView.classList.remove('hidden');
@@ -384,7 +386,7 @@ function updateOrCreateChart(canvasId, labels, data, label, color) {
 
 
 function showAIReport(measurement) {
-  const { ph, gh, kh, chlorine, nitrite, nitrate, co2 } = measurement;
+  const { ph, gh, kh, chlorine, nitrite, nitrate, fe2, co2 } = measurement;
   const { text, severity } = generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2);
 
   aiAdviceBox.classList.remove('disabled');
