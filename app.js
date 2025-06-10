@@ -177,19 +177,37 @@ const aiStatusMeter = document.getElementById('ai-status-meter');
 let chartPh = null;
 let chartCo2 = null;
 
+function parseNumber(value) {
+  if (value === undefined || value === null) return null;
+  const cleaned = String(value).replace(',', '.').trim();
+  if (cleaned === '') return null;
+  const n = parseFloat(cleaned);
+  return isNaN(n) ? null : n;
+}
+
+function formatNumber(value) {
+  if (typeof value !== 'number' || isNaN(value)) return '—';
+  return value.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
+}
+
 dataForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const user = auth.currentUser;
   if (!user) return;
 
-  const ph = parseFloat(document.getElementById('ph').value);
-  const gh = parseFloat(document.getElementById('gh').value);
-  const kh = parseFloat(document.getElementById('kh').value);
-  const chlorine = parseFloat(document.getElementById('chlorine').value);
-  const nitrite = parseFloat(document.getElementById('nitrite').value);
-  const nitrate = parseFloat(document.getElementById('nitrate').value);
-  const fe2 = parseFloat(document.getElementById('fe2').value);
-  const co2 = Math.round(3 * kh * Math.pow(10, (7 - ph)));
+  const ph = parseNumber(document.getElementById('ph').value);
+  const gh = parseNumber(document.getElementById('gh').value);
+  const kh = parseNumber(document.getElementById('kh').value);
+  const chlorine = parseNumber(document.getElementById('chlorine').value);
+  const nitrite = parseNumber(document.getElementById('nitrite').value);
+  const nitrate = parseNumber(document.getElementById('nitrate').value);
+  const fe2 = parseNumber(document.getElementById('fe2').value);
+  const co2 = ph !== null && kh !== null
+    ? Math.round(3 * kh * Math.pow(10, (7 - ph)))
+    : null;
 
   lastMeasurement = { ph, gh, kh, chlorine, nitrite, nitrate, fe2, co2 };
 
@@ -222,34 +240,34 @@ function generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2) {
     }
   }
 
-  if (isNaN(ph)) advice.push("pH value missing");
+  if (ph === null || isNaN(ph)) advice.push("pH value missing");
   else {
     checkSeverity(ph < 6 || ph > 8, "pH is slightly out of range (6-8).", "pH is critically out of range!");
   }
 
-  if (isNaN(gh)) advice.push("GH value missing");
+  if (gh === null || isNaN(gh)) advice.push("GH value missing");
   else {
     checkSeverity(gh < 3, "GH is low, monitor fish health.");
   }
 
-  if (isNaN(kh)) advice.push("KH value missing");
+  if (kh === null || isNaN(kh)) advice.push("KH value missing");
   else {
     checkSeverity(kh < 3, "KH is low, may cause pH swings.");
   }
 
-  if (!isNaN(chlorine) && chlorine > 0) {
+  if (chlorine !== null && !isNaN(chlorine) && chlorine > 0) {
     maxSeverity = 2;
     advice.push("Chlorine detected! Use dechlorinator immediately.");
   }
-  if (!isNaN(nitrite) && nitrite > 0.3) {
+  if (nitrite !== null && !isNaN(nitrite) && nitrite > 0.3) {
     maxSeverity = 2;
     advice.push("Nitrite levels are high! Partial water change recommended.");
   }
-  if (!isNaN(nitrate) && nitrate > 40) {
+  if (nitrate !== null && !isNaN(nitrate) && nitrate > 40) {
     maxSeverity = 1;
     advice.push("Nitrate is elevated, consider cleaning or less feeding.");
   }
-  if (!isNaN(co2)) {
+  if (co2 !== null && !isNaN(co2)) {
     if (co2 > 30) {
       maxSeverity = Math.max(maxSeverity, 2);
       advice.push("CO₂ is too high, aerate water.");
@@ -288,25 +306,25 @@ async function loadData(uid) {
     if (!firstMeasurement) firstMeasurement = d;
 
     labels.push(date.toLocaleDateString());
-    phData.push(d.ph);
-    co2Data.push(d.co2);
+    phData.push(typeof d.ph === 'number' && !isNaN(d.ph) ? d.ph : null);
+    co2Data.push(typeof d.co2 === 'number' && !isNaN(d.co2) ? d.co2 : null);
 
     const li = document.createElement('li');
     li.className = "flex justify-between items-center py-2 hover:bg-blue-100 rounded px-2";
 
     const textSpan = document.createElement('span');
-    textSpan.textContent = `${date.toLocaleString()} - Fe2: ${d.fe2 ?? '—'}`;
+    textSpan.textContent = `${date.toLocaleString()} - Fe2: ${formatNumber(d.fe2)}`;
     textSpan.className = "cursor-pointer flex-grow";
     textSpan.onclick = () => {
       detailContent.innerHTML = `
-        <p><strong>pH:</strong> ${d.ph}</p>
-        <p><strong>GH:</strong> ${d.gh}</p>
-        <p><strong>KH:</strong> ${d.kh}</p>
-        <p><strong>CO₂:</strong> ${d.co2} mg/L</p>
-        <p><strong>Chlorine:</strong> ${d.chlorine ?? '—'}</p>
-        <p><strong>Nitrite:</strong> ${d.nitrite ?? '—'}</p>
-        <p><strong>Nitrate:</strong> ${d.nitrate ?? '—'}</p>
-        <p><strong>Fe2:</strong> ${d.fe2 ?? '—'}</p>
+        <p><strong>pH:</strong> ${formatNumber(d.ph)}</p>
+        <p><strong>GH:</strong> ${formatNumber(d.gh)}</p>
+        <p><strong>KH:</strong> ${formatNumber(d.kh)}</p>
+        <p><strong>CO₂:</strong> ${formatNumber(d.co2)} mg/L</p>
+        <p><strong>Chlorine:</strong> ${formatNumber(d.chlorine)}</p>
+        <p><strong>Nitrite:</strong> ${formatNumber(d.nitrite)}</p>
+        <p><strong>Nitrate:</strong> ${formatNumber(d.nitrate)}</p>
+        <p><strong>Fe2:</strong> ${formatNumber(d.fe2)}</p>
         <p><strong>Date:</strong> ${date.toLocaleDateString()}<br/><strong>Time:</strong> ${date.toLocaleTimeString()}</p>
       `;
       detailView.classList.remove('hidden');
