@@ -167,8 +167,7 @@ const aiStatusArrow = document.getElementById('ai-status-arrow');
 const aiStatusIcon = document.getElementById('ai-status-icon');
 const aiStatusMeter = document.getElementById('ai-status-meter');
 
-let chartPh = null;
-let chartCo2 = null;
+let chartMain = null;
 
 function parseNumber(value) {
   if (value === undefined || value === null) return null;
@@ -309,6 +308,12 @@ async function loadData(uid) {
 
   const labels = [];
   const phData = [];
+  const ghData = [];
+  const khData = [];
+  const chlorineData = [];
+  const nitriteData = [];
+  const nitrateData = [];
+  const fe2Data = [];
   const co2Data = [];
   const filter = filterDate.value;
 
@@ -325,6 +330,12 @@ async function loadData(uid) {
 
     labels.push(date.toLocaleDateString());
     phData.push(typeof d.ph === 'number' && !isNaN(d.ph) ? d.ph : null);
+    ghData.push(typeof d.gh === 'number' && !isNaN(d.gh) ? d.gh : null);
+    khData.push(typeof d.kh === 'number' && !isNaN(d.kh) ? d.kh : null);
+    chlorineData.push(typeof d.chlorine === 'number' && !isNaN(d.chlorine) ? d.chlorine : null);
+    nitriteData.push(typeof d.nitrite === 'number' && !isNaN(d.nitrite) ? d.nitrite : null);
+    nitrateData.push(typeof d.nitrate === 'number' && !isNaN(d.nitrate) ? d.nitrate : null);
+    fe2Data.push(typeof d.fe2 === 'number' && !isNaN(d.fe2) ? d.fe2 : null);
     co2Data.push(typeof d.co2 === 'number' && !isNaN(d.co2) ? d.co2 : null);
 
     const li = document.createElement('li');
@@ -382,30 +393,42 @@ async function loadData(uid) {
     aiStatusIcon.className = 'text-gray-500 my-3 text-4xl';
   }
 
-  updateOrCreateChart('chart', labels, phData, 'pH', 'rgba(59, 130, 246, 1)');
-  updateOrCreateChart('chart-co2', labels, co2Data, 'CO₂ (mg/L)', 'rgba(34, 197, 94, 1)');
+  updateOrCreateChart(labels, [
+    { label: 'pH', data: phData, color: 'rgba(59, 130, 246, 1)' },
+    { label: 'GH (°dH)', data: ghData, color: 'rgba(96, 165, 250, 1)' },
+    { label: 'KH (°dH)', data: khData, color: 'rgba(251, 113, 133, 1)' },
+    { label: 'Chlorine (mg/L)', data: chlorineData, color: 'rgba(34, 197, 94, 1)' },
+    { label: 'Nitrite (mg/L)', data: nitriteData, color: 'rgba(234, 179, 8, 1)' },
+    { label: 'Nitrate (mg/L)', data: nitrateData, color: 'rgba(249, 115, 22, 1)' },
+    { label: 'Fe2 (mg/L)', data: fe2Data, color: 'rgba(139, 92, 246, 1)' },
+    { label: 'CO₂ (mg/L)', data: co2Data, color: 'rgba(16, 185, 129, 1)' }
+  ]);
 }
 
-function updateOrCreateChart(canvasId, labels, data, label, color) {
-  const ctx = document.getElementById(canvasId).getContext('2d');
-  let chartInstance = (canvasId === 'chart') ? chartPh : chartCo2;
+function updateOrCreateChart(labels, datasets) {
+  const ctx = document.getElementById('chart').getContext('2d');
+  let chartInstance = chartMain;
 
   if (chartInstance) {
     chartInstance.data.labels = labels;
-    chartInstance.data.datasets[0].data = data;
+    datasets.forEach((ds, idx) => {
+      if (chartInstance.data.datasets[idx]) {
+        chartInstance.data.datasets[idx].data = ds.data;
+      }
+    });
     chartInstance.update();
   } else {
     chartInstance = new Chart(ctx, {
       type: 'line',
       data: {
         labels,
-        datasets: [{
-          label,
-          data,
-          borderColor: color,
-          backgroundColor: color + '33',
+        datasets: datasets.map(ds => ({
+          label: ds.label,
+          data: ds.data,
+          borderColor: ds.color,
+          backgroundColor: ds.color + '33',
           tension: 0.4
-        }]
+        }))
       },
       options: {
         responsive: true,
@@ -415,8 +438,7 @@ function updateOrCreateChart(canvasId, labels, data, label, color) {
         }
       }
     });
-    if (canvasId === 'chart') chartPh = chartInstance;
-    else chartCo2 = chartInstance;
+    chartMain = chartInstance;
   }
 }
 

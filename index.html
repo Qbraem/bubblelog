@@ -380,7 +380,7 @@
     <section id="dashboard" class="hidden bg-white rounded-2xl p-4">
       <h2 class="text-xl font-semibold mb-4 text-center text-blue-700">Your Measurements</h2>
       <form id="data-form" class="grid gap-3 mb-6" autocomplete="off" novalidate>
-        <div class="grid grid-cols-2 gap-2 text-gray-700 text-xs font-semibold">
+        <div class="grid grid-cols-3 gap-2 text-gray-700 text-xs font-semibold">
           <label for="ph" class="flex items-center gap-1"><span>pH</span><span>(unitless)</span></label>
           <label for="gh" class="flex items-center gap-1"><span>GH</span><span>(°dH)</span></label>
           <label for="kh" class="flex items-center gap-1"><span>KH</span><span>(°dH)</span></label>
@@ -402,9 +402,8 @@
       </form>
       <div id="result" class="text-center text-sm text-blue-800 mb-2"></div>
 
-      <div id="charts" class="flex flex-wrap gap-4 max-w-xl mx-auto mb-6">
-        <canvas id="chart" class="flex-grow min-w-[300px] max-w-[48%]" style="min-height:250px;"></canvas>
-        <canvas id="chart-co2" class="flex-grow min-w-[300px] max-w-[48%]" style="min-height:250px;"></canvas>
+      <div id="charts" class="max-w-xl mx-auto mb-6">
+        <canvas id="chart" class="w-full" style="min-height:250px;"></canvas>
       </div>
 
       <div id="ai-advice-box" class="max-w-xl mx-auto mt-4 p-6 rounded-2xl shadow-2xl text-gray-900 text-center bg-white bg-opacity-70 backdrop-filter backdrop-blur-md disabled" aria-disabled="true" tabindex="-1" style="transition:background-color 0.3s">
