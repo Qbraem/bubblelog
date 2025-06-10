@@ -172,8 +172,11 @@ let chartCo2 = null;
 
 function parseNumber(value) {
   if (value === undefined || value === null) return null;
-  const cleaned = String(value).replace(',', '.').trim();
-  if (cleaned === '') return null;
+  const cleaned = String(value)
+    .replace(/,/g, '.')
+    .replace(/\s+/g, '')
+    .trim();
+  if (cleaned === '' || cleaned === '.') return null;
   const n = parseFloat(cleaned);
   return isNaN(n) ? null : n;
 }
@@ -212,7 +215,7 @@ dataForm.addEventListener('submit', async (e) => {
   const nitrite = parseNumber(document.getElementById('nitrite').value);
   const nitrate = parseNumber(document.getElementById('nitrate').value);
   const fe2 = parseNumber(document.getElementById('fe2').value);
-  const co2 = ph !== null && kh !== null
+  const co2 = ph !== null && !isNaN(ph) && kh !== null && !isNaN(kh)
     ? Math.round(3 * kh * Math.pow(10, (7 - ph)))
     : null;
 
