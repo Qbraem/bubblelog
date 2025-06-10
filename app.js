@@ -193,6 +193,20 @@ function formatNumber(value) {
   });
 }
 
+function sanitizeMeasurementData(data) {
+  return {
+    ph: parseNumber(data.ph),
+    gh: parseNumber(data.gh),
+    kh: parseNumber(data.kh),
+    chlorine: parseNumber(data.chlorine),
+    nitrite: parseNumber(data.nitrite),
+    nitrate: parseNumber(data.nitrate),
+    fe2: parseNumber(data.fe2),
+    co2: parseNumber(data.co2),
+    timestamp: data.timestamp
+  };
+}
+
 dataForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const user = auth.currentUser;
@@ -297,7 +311,7 @@ async function loadData(uid) {
   let firstMeasurement = null;
 
   querySnapshot.forEach((docSnapshot, index) => {
-    const d = docSnapshot.data();
+    const d = sanitizeMeasurementData(docSnapshot.data());
     const docId = docSnapshot.id;
     const date = d.timestamp.toDate ? d.timestamp.toDate() : new Date(d.timestamp);
     const dateStr = date.toISOString().split('T')[0];
