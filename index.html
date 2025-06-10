@@ -32,7 +32,8 @@
       font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
       min-height: 100vh;
       margin: 0;
-      padding-top: 56px;
+      padding-top: calc(56px + constant(safe-area-inset-top));
+      padding-top: calc(56px + env(safe-area-inset-top));
     }
 
     nav {
@@ -44,7 +45,9 @@
       z-index: 9999;
       display: flex;
       justify-content: center;
-    }
+      padding-top: constant(safe-area-inset-top);
+      padding-top: env(safe-area-inset-top);
+      }
     #profile-container {
       max-width: 960px;
       margin: 0 auto;
