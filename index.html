@@ -12,8 +12,22 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@700&display=swap');
 
+    :root {
+      --glass-bg: rgba(255, 255, 255, 0.3);
+      --glass-border: rgba(255, 255, 255, 0.4);
+    }
+
+    .glass {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+    }
+
     body {
-      background: linear-gradient(to bottom, #1e3a8a, #2563eb);
+      background: radial-gradient(at top left, rgba(255,255,255,0.25), transparent 70%),
+                  linear-gradient(to bottom, #1e3a8a, #2563eb);
       color: #1f2937;
       font-family: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', Helvetica, Arial, sans-serif;
       min-height: 100vh;
@@ -23,7 +37,6 @@
 
     nav {
       width: 100%;
-      background: #1e3a8a;
       border-bottom: none;
       position: fixed;
       top: 0;
@@ -98,7 +111,8 @@
       max-width: 960px;
       margin: 1rem auto 2rem;
       position: relative;
-      background: linear-gradient(to right, #1e40af, #3b82f6, #60a5fa);
+      background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.1) 100%),
+                  linear-gradient(to right, #1e40af, #3b82f6, #60a5fa);
       border-radius: 1.5rem;
       height: 160px;
       overflow: hidden;
@@ -134,7 +148,6 @@
     main {
       max-width: 960px;
       margin: 0 auto 4rem;
-      background: white;
       border-radius: 1.5rem;
       padding: 2rem;
       box-shadow: 0 0 0 transparent;
@@ -144,7 +157,6 @@
     footer {
       max-width: 960px;
       margin: 2rem auto 2rem;
-      background: white;
       border-radius: 1.5rem;
       padding: 1rem 2rem;
       text-align: center;
@@ -297,7 +309,7 @@
   </style>
 </head>
 <body>
-  <nav>
+  <nav class="glass">
     <div id="profile-container" role="navigation" aria-label="Main Navigation">
       <div class="logo-font flex items-center gap-2" aria-label="App logo">
         <svg width="32" height="32" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
@@ -325,7 +337,7 @@
     </div>
   </nav>
 
-  <section id="header-section" aria-label="Welcome header">
+  <section id="header-section" class="glass" aria-label="Welcome header">
     <p>Welcome to</p>
     <h1 class="logo-font">BubbleLog</h1>
     <div class="bubble" style="left:10%; animation-delay:0s;"></div>
@@ -335,7 +347,7 @@
     <div class="bubble" style="left:90%; animation-delay:3s;"></div>
   </section>
 
-  <main>
+  <main class="glass">
 
     <!-- Auth container -->
     <section id="auth-container">
@@ -423,7 +435,7 @@
     </section>
   </main>
 
-  <footer>
+  <footer class="glass">
     Indie app developed in Belgium by <span class="text-blue-600">Quinten Braem</span>, with a little help from AI.<br />
     <small class="text-gray-600">App Version 1.0</small>
   </footer>
