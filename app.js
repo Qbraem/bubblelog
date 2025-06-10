@@ -43,18 +43,11 @@ const profileDropdown = document.getElementById('profile-dropdown');
 const profileUsername = document.getElementById('profile-username');
 const contactDeveloper = document.getElementById('contact-developer');
 const extraRegisterFields = document.getElementById('extra-register-fields');
-const welcomeInfo = document.getElementById('welcome-info');
-const welcomeDismiss = document.getElementById('welcome-dismiss');
 
 let isRegister = false;
 let currentUserData = null;
 let lastMeasurement = null;
 
-if (welcomeDismiss) {
-  welcomeDismiss.addEventListener('click', () => {
-    welcomeInfo.classList.add('hidden');
-  });
-}
 
 toggleLink.addEventListener('click', () => {
   isRegister = !isRegister;
