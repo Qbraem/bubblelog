@@ -208,6 +208,14 @@ dataForm.addEventListener('submit', async (e) => {
   const user = auth.currentUser;
   if (!user) return;
 
+  const numericFields = ['ph', 'gh', 'kh', 'chlorine', 'nitrite', 'nitrate', 'fe2'];
+  for (const id of numericFields) {
+    if (document.getElementById(id).value.includes(',')) {
+      resultDiv.textContent = 'Use a dot (.) instead of a comma (,) for decimal numbers.';
+      return;
+    }
+  }
+
   const ph = parseNumber(document.getElementById('ph').value);
   const gh = parseNumber(document.getElementById('gh').value);
   const kh = parseNumber(document.getElementById('kh').value);
