@@ -38,6 +38,7 @@ const toggleLink = document.getElementById('toggle-link');
 const authSubmit = document.getElementById('auth-submit');
 const logoutButton = document.getElementById('logout-button');
 const profileContainer = document.getElementById('profile-container');
+const analysisContainer = document.getElementById('analysis');
 const profileToggle = document.getElementById('profile-name-dropdown');
 const profileDropdown = document.getElementById('profile-dropdown');
 const profileUsername = document.getElementById('profile-username');
@@ -134,6 +135,7 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     authContainer.classList.add('hidden');
     dashboard.classList.remove('hidden');
+    analysisContainer.classList.remove('hidden');
     profileContainer.style.display = 'flex';
 
     try {
@@ -153,6 +155,7 @@ onAuthStateChanged(auth, async (user) => {
   } else {
     authContainer.classList.remove('hidden');
     dashboard.classList.add('hidden');
+    analysisContainer.classList.add('hidden');
     profileContainer.style.display = 'none';
     if (profileUsername) profileUsername.textContent = '';
     currentUserData = null;
