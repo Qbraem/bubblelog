@@ -34,6 +34,7 @@
       margin: 0;
       padding-top: calc(56px + constant(safe-area-inset-top));
       padding-top: calc(56px + env(safe-area-inset-top));
+      padding-bottom: 86px;
     }
 
     nav {
@@ -47,7 +48,44 @@
       justify-content: center;
       padding-top: constant(safe-area-inset-top);
       padding-top: env(safe-area-inset-top);
+    }
+
+    nav::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: constant(safe-area-inset-top);
+      height: env(safe-area-inset-top);
+      background: var(--glass-bg);
+      border-bottom: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+      z-index: -1;
       }
+
+    nav::after {
+      content: "";
+      position: absolute;
+      top: calc(-1 * constant(safe-area-inset-top));
+      top: calc(-1 * env(safe-area-inset-top));
+      left: 0;
+      width: 100%;
+      height: calc(100% + constant(safe-area-inset-top));
+      height: calc(100% + env(safe-area-inset-top));
+      background: linear-gradient(
+        90deg,
+        rgba(0, 24, 72, 0.3),
+        rgba(0, 70, 140, 0.3),
+        rgba(0, 118, 190, 0.3),
+        rgba(0, 180, 216, 0.3),
+        rgba(144, 224, 239, 0.3),
+        rgba(202, 240, 248, 0.3)
+      );
+      z-index: -2;
+    }
     #profile-container {
       max-width: 960px;
       margin: 0 auto;
@@ -74,6 +112,7 @@
       display: flex;
       align-items: center;
       gap: 0.25rem;
+      padding-left: 0.5rem;
       cursor: pointer;
       color: white;
       user-select: none;
@@ -166,7 +205,6 @@
       font-size: 0.85rem;
       color: #ffffff;
       font-weight: 600;
-      box-shadow: none;
       user-select: none;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
@@ -203,6 +241,29 @@
     button#auth-submit:hover,
     button[type="submit"]:hover {
       background-color: #1e40af !important;
+    }
+
+    /* Styled dropdown for aquarium selection */
+    .aquarium-select {
+      -webkit-appearance: none;
+      appearance: none;
+      background-color: rgba(255, 255, 255, 0.7);
+      border: 1px solid #93c5fd;
+      border-radius: 9999px;
+      padding: 0.5rem 2rem 0.5rem 0.75rem;
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%231e3a8a'%3e%3cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M6 9l6 6 6-6'/%3e%3c/svg%3e");
+      background-repeat: no-repeat;
+      background-position: right 0.75rem center;
+      background-size: 1rem;
+      font-weight: 500;
+      color: #1e3a8a;
+    }
+
+    @media (max-width: 600px) {
+      .aquarium-select {
+        font-size: 1rem;
+        padding-right: 2.5rem;
+      }
     }
 
     /* Bubble animation */
@@ -301,6 +362,10 @@
         max-width: 100% !important;
       }
 
+      #reminder-box {
+        max-width: 100% !important;
+      }
+
       #charts {
         flex-direction: column !important;
         gap: 1rem !important;
@@ -310,6 +375,52 @@
         min-width: auto !important;
         min-height: 300px !important;
       }
+    }
+
+    #aquarium-menu {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 1rem 0 1.5rem;
+      background: var(--glass-bg);
+      border-top: 1px solid var(--glass-border);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      z-index: 9999;
+      min-height: 4rem;
+    }
+
+    #aquarium-menu button {
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      background-color: #bfdbfe;
+      color: #1e3a8a;
+      font-weight: 600;
+    }
+
+    #aquarium-menu button.active {
+      background-color: #2563eb;
+      color: white;
+    }
+
+    /* Ensure login page text is white */
+    #auth-container,
+    #auth-container * {
+      color: white !important;
+    }
+    /* Input fields should have black text */
+    #auth-container input,
+    #auth-container select {
+      color: black !important;
+    }
+    #auth-container input::placeholder,
+    #auth-container select::placeholder {
+      color: black !important;
+      opacity: 1;
     }
   </style>
 </head>
@@ -336,6 +447,8 @@
 
       <div id="profile-dropdown" role="menu" aria-label="User menu" class="hidden">
         <div class="px-4 py-2 text-sm text-blue-700 border-b border-blue-200" id="profile-username"></div>
+        <button id="add-aquarium" role="menuitem" class="block w-full text-left px-4 py-2 hover:bg-blue-100 focus:outline-none">Add Aquarium</button>
+        <button id="delete-aquarium" role="menuitem" class="block w-full text-left px-4 py-2 hover:bg-blue-100 focus:outline-none">Remove Aquarium</button>
         <button id="logout-button" role="menuitem" class="block w-full text-left px-4 py-2 hover:bg-blue-100 focus:outline-none">Logout</button>
         <button id="contact-developer" role="menuitem" class="block w-full text-left px-4 py-2 hover:bg-blue-100 focus:outline-none">Contact Developer</button>
       </div>
@@ -381,16 +494,25 @@
     <!-- Dashboard container -->
     <section id="dashboard" class="hidden bg-white rounded-2xl p-4">
       <h2 class="text-xl font-semibold mb-4 text-center text-blue-700">Your Measurements</h2>
+      <div id="aquarium-controls" class="flex flex-col sm:flex-row flex-wrap items-center gap-2 mb-4">
+        <label for="aquarium-select" class="text-sm font-medium text-blue-900 w-full sm:w-auto">Aquarium:</label>
+        <select id="aquarium-select" class="aquarium-select w-full sm:flex-grow"></select>
+      </div>
+      <div id="reminder-box" class="glass rounded-xl p-4 text-sm text-gray-900 w-full mx-auto mt-2 mb-4 border-l-4 border-blue-400">
+        <h3 class="text-lg font-semibold mb-2 text-blue-800">Testing Reminders</h3>
+        <ul id="reminder-list" class="grid grid-cols-2 gap-x-4 gap-y-1"></ul>
+      </div>
+
+      <div id="value-explanations" class="bg-blue-50 rounded-md p-2 text-sm text-gray-700 mb-4 grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
+        <span>pH (unitless)</span>
+        <span>General Hardness (GH, °dH)</span>
+        <span>Carbonate Hardness (KH, °dH)</span>
+        <span>Chlorine (Cl₂, mg/L)</span>
+        <span>Nitrite (NO₂⁻, mg/L)</span>
+        <span>Nitrate (NO₃⁻, mg/L)</span>
+        <span>Iron (Fe²⁺, mg/L)</span>
+      </div>
       <form id="data-form" class="grid gap-3 mb-6" autocomplete="off" novalidate>
-        <div class="grid grid-cols-2 gap-2 text-gray-700 text-xs font-semibold">
-          <label for="ph" class="flex items-center gap-1"><span>pH</span><span>(unitless)</span></label>
-          <label for="gh" class="flex items-center gap-1"><span>GH</span><span>(°dH)</span></label>
-          <label for="kh" class="flex items-center gap-1"><span>KH</span><span>(°dH)</span></label>
-          <label for="chlorine" class="flex items-center gap-1"><span>Chlorine</span><span>(mg/L)</span></label>
-          <label for="nitrite" class="flex items-center gap-1"><span>Nitrite</span><span>(mg/L)</span></label>
-          <label for="nitrate" class="flex items-center gap-1"><span>Nitrate</span><span>(mg/L)</span></label>
-          <label for="fe2" class="flex items-center gap-1"><span>Fe2</span><span>(mg/L)</span></label>
-        </div>
         <div class="grid grid-cols-2 gap-2">
           <input type="number" step="0.01" id="ph" placeholder="pH" class="border rounded-full px-2 py-1 text-sm" required />
           <input type="number" step="0.01" id="gh" placeholder="GH" class="border rounded-full px-2 py-1 text-sm" required />
@@ -431,6 +553,7 @@
         </div>
       </div>
 
+
       <div id="detail-view" class="mt-6 hidden bg-white p-4 rounded-xl shadow text-sm text-gray-900 max-w-xl mx-auto">
         <h4 class="font-bold mb-2">Measurement Detail</h4>
         <div id="detail-content"></div>
@@ -439,9 +562,11 @@
     </section>
   </main>
 
-  <footer class="glass bg-white">
-    Indie app developed in Belgium by <span class="text-blue-600">Quinten Braem</span>, with a little help from AI.<br />
-    <small class="text-gray-600">App Version 1.0</small>
+  <div id="aquarium-menu" class="hidden"></div>
+
+  <footer class="glass text-white">
+    Indie app developed in Belgium by <span class="text-white">Quinten Braem</span>, with a little help from AI.<br />
+    <small class="text-white">Béta V1.1</small>
   </footer>
 
   <script type="module" src="app.js"></script>

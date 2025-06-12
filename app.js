@@ -43,10 +43,15 @@ const profileDropdown = document.getElementById('profile-dropdown');
 const profileUsername = document.getElementById('profile-username');
 const contactDeveloper = document.getElementById('contact-developer');
 const extraRegisterFields = document.getElementById('extra-register-fields');
+const aquariumSelect = document.getElementById('aquarium-select');
+const addAquariumBtn = document.getElementById('add-aquarium');
+const deleteAquariumBtn = document.getElementById('delete-aquarium');
+const aquariumMenu = document.getElementById('aquarium-menu');
 
 let isRegister = false;
 let currentUserData = null;
 let lastMeasurement = null;
+let currentAquariumId = null;
 
 
 toggleLink.addEventListener('click', () => {
@@ -144,7 +149,7 @@ onAuthStateChanged(auth, async (user) => {
       if (profileUsername) profileUsername.textContent = user.email;
     }
 
-    loadData(user.uid);
+    loadAquariums(user.uid);
   } else {
     authContainer.classList.remove('hidden');
     dashboard.classList.add('hidden');
@@ -152,6 +157,7 @@ onAuthStateChanged(auth, async (user) => {
     if (profileUsername) profileUsername.textContent = '';
     currentUserData = null;
     lastMeasurement = null;
+    currentAquariumId = null;
   }
 });
 
@@ -166,8 +172,89 @@ const aiAdviceText = document.getElementById('ai-advice-text');
 const aiStatusArrow = document.getElementById('ai-status-arrow');
 const aiStatusIcon = document.getElementById('ai-status-icon');
 const aiStatusMeter = document.getElementById('ai-status-meter');
+const reminderList = document.getElementById('reminder-list');
+
+const testFrequencies = {
+  ph: 7,
+  gh: 30,
+  kh: 14,
+  chlorine: 7,
+  nitrite: 7,
+  nitrate: 7,
+  fe2: 7
+};
+
+const testLabels = {
+  ph: 'pH',
+  gh: 'GH',
+  kh: 'KH',
+  chlorine: 'Chlorine',
+  nitrite: 'Nitrite',
+  nitrate: 'Nitrate',
+  fe2: 'Fe2'
+};
 
 let chartMain = null;
+
+async function loadAquariums(uid, selectId = null) {
+  const snapshot = await getDocs(collection(db, `users/${uid}/aquariums`));
+  aquariumSelect.innerHTML = '';
+  let firstId = null;
+  const list = [];
+  snapshot.forEach((docSnap) => {
+    const name = docSnap.data().name || 'Unnamed';
+    const opt = document.createElement('option');
+    opt.value = docSnap.id;
+    opt.textContent = name;
+    aquariumSelect.appendChild(opt);
+    if (!firstId) firstId = docSnap.id;
+    list.push({ id: docSnap.id, name });
+  });
+
+  if (!firstId) {
+    const docRef = await addDoc(collection(db, `users/${uid}/aquariums`), { name: 'My Aquarium' });
+    await setDoc(doc(db, `users/${uid}/aquariums/${docRef.id}/measurements`, 'init'), { init: true, timestamp: new Date() });
+    firstId = docRef.id;
+    const opt = document.createElement('option');
+    opt.value = firstId;
+    opt.textContent = 'My Aquarium';
+    aquariumSelect.appendChild(opt);
+    list.push({ id: firstId, name: 'My Aquarium' });
+  }
+
+  const selected = selectId || firstId;
+  aquariumSelect.value = selected;
+  currentAquariumId = selected;
+  deleteAquariumBtn.classList.toggle('hidden', aquariumSelect.options.length <= 1);
+  updateAquariumMenuButtons(list);
+  loadData(uid);
+}
+
+function updateAquariumMenuButtons(list = null) {
+  if (!aquariumMenu) return;
+  if (!list) {
+    list = Array.from(aquariumSelect.options).map(o => ({ id: o.value, name: o.textContent }));
+  }
+  aquariumMenu.innerHTML = '';
+  if (list.length === 0) {
+    aquariumMenu.classList.add('hidden');
+    return;
+  }
+  aquariumMenu.classList.remove('hidden');
+  list.slice(0, 3).forEach(aq => {
+    const btn = document.createElement('button');
+    btn.textContent = aq.name;
+    if (aq.id === currentAquariumId) btn.classList.add('active');
+    btn.addEventListener('click', () => {
+      aquariumSelect.value = aq.id;
+      currentAquariumId = aq.id;
+      const user = auth.currentUser;
+      if (user) loadData(user.uid);
+      updateAquariumMenuButtons(list);
+    });
+    aquariumMenu.appendChild(btn);
+  });
+}
 
 function parseNumber(value) {
   if (value === undefined || value === null) return null;
@@ -228,8 +315,13 @@ dataForm.addEventListener('submit', async (e) => {
 
   lastMeasurement = { ph, gh, kh, chlorine, nitrite, nitrate, fe2, co2 };
 
+  if (!currentAquariumId) {
+    alert('Please create an aquarium first.');
+    return;
+  }
+
   try {
-    await addDoc(collection(db, `users/${user.uid}/measurements`), {
+    await addDoc(collection(db, `users/${user.uid}/aquariums/${currentAquariumId}/measurements`), {
       timestamp: new Date(),
       ph, gh, kh, chlorine, nitrite, nitrate, fe2, co2
     });
@@ -303,7 +395,8 @@ function generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2) {
 
 async function loadData(uid) {
   historyList.innerHTML = '';
-  const q = query(collection(db, `users/${uid}/measurements`), orderBy('timestamp', 'desc'));
+  if (!currentAquariumId) return;
+  const q = query(collection(db, `users/${uid}/aquariums/${currentAquariumId}/measurements`), orderBy('timestamp', 'desc'));
   const querySnapshot = await getDocs(q);
 
   const labels = [];
@@ -317,9 +410,12 @@ async function loadData(uid) {
   const co2Data = [];
   const filter = filterDate.value;
 
+  const reminderData = [];
+
   let firstMeasurement = null;
 
   querySnapshot.forEach((docSnapshot, index) => {
+    if (docSnapshot.data().init) return; // skip placeholder docs
     const d = sanitizeMeasurementData(docSnapshot.data());
     const docId = docSnapshot.id;
     const date = d.timestamp.toDate ? d.timestamp.toDate() : new Date(d.timestamp);
@@ -327,6 +423,8 @@ async function loadData(uid) {
     if (filter && filter !== dateStr) return;
 
     if (!firstMeasurement) firstMeasurement = d;
+
+    reminderData.push(d);
 
     labels.push(date.toLocaleDateString());
     phData.push(typeof d.ph === 'number' && !isNaN(d.ph) ? d.ph : null);
@@ -367,7 +465,7 @@ async function loadData(uid) {
       ev.stopPropagation();
       if (confirm("Are you sure you want to delete this measurement?")) {
         try {
-          await deleteDoc(doc(db, `users/${uid}/measurements`, docId));
+          await deleteDoc(doc(db, `users/${uid}/aquariums/${currentAquariumId}/measurements`, docId));
           loadData(uid);
         } catch (error) {
           alert("Failed to delete: " + error.message);
@@ -403,6 +501,8 @@ async function loadData(uid) {
     { label: 'Fe2 (mg/L)', data: fe2Data, color: 'rgba(139, 92, 246, 1)' },
     { label: 'CO₂ (mg/L)', data: co2Data, color: 'rgba(16, 185, 129, 1)' }
   ]);
+
+  updateReminders(reminderData);
 }
 
 function updateOrCreateChart(labels, datasets) {
@@ -464,10 +564,80 @@ function showAIReport(measurement) {
                                            'my-3 text-4xl text-green-600';
 }
 
+function updateReminders(measurements) {
+  if (!reminderList) return;
+  const lastDates = {};
+  measurements.forEach((m) => {
+    const ts = m.timestamp.toDate ? m.timestamp.toDate() : new Date(m.timestamp);
+    for (const key in testFrequencies) {
+      if (!lastDates[key] && m[key] !== null && !isNaN(m[key])) {
+        lastDates[key] = ts;
+      }
+    }
+  });
+
+  reminderList.innerHTML = '';
+  const now = new Date();
+  for (const key in testFrequencies) {
+    const li = document.createElement('li');
+    li.classList.add('col-span-1', 'glass', 'rounded-lg', 'px-2', 'py-1');
+    const lastDate = lastDates[key];
+    const freq = testFrequencies[key];
+    let text;
+    if (!lastDate) {
+      text = `${testLabels[key]}: test today`;
+      li.classList.add('text-green-600', 'font-semibold');
+    } else {
+      const daysSince = Math.floor((now - lastDate) / (1000 * 60 * 60 * 24));
+      const daysLeft = freq - daysSince;
+      if (daysLeft <= 0) {
+        text = `${testLabels[key]}: test today`;
+        li.classList.add('text-green-600', 'font-semibold');
+      } else {
+        text = `${testLabels[key]}: in ${daysLeft} day${daysLeft === 1 ? '' : 's'}`;
+        li.classList.add('text-black');
+      }
+    }
+    li.textContent = text;
+    reminderList.appendChild(li);
+  }
+}
+
 
 filterDate.addEventListener('change', () => {
   const user = auth.currentUser;
   if (user) loadData(user.uid);
+});
+
+aquariumSelect.addEventListener('change', () => {
+  currentAquariumId = aquariumSelect.value;
+  const user = auth.currentUser;
+  if (user) loadData(user.uid);
+  deleteAquariumBtn.classList.toggle('hidden', aquariumSelect.options.length <= 1);
+  updateAquariumMenuButtons();
+});
+
+addAquariumBtn.addEventListener('click', async () => {
+  const user = auth.currentUser;
+  if (!user) return;
+  const name = prompt('Aquarium name');
+  if (!name) return;
+  try {
+    const docRef = await addDoc(collection(db, `users/${user.uid}/aquariums`), { name });
+    await setDoc(doc(db, `users/${user.uid}/aquariums/${docRef.id}/measurements`, 'init'), { init: true, timestamp: new Date() });
+    loadAquariums(user.uid, docRef.id);
+  } catch (err) {
+    alert('Failed to add aquarium: ' + err.message);
+  }
+});
+
+deleteAquariumBtn.addEventListener('click', async () => {
+  const user = auth.currentUser;
+  if (!user || !currentAquariumId) return;
+  if (!confirm('Delete this aquarium?')) return;
+  await deleteDoc(doc(db, `users/${user.uid}/aquariums`, currentAquariumId));
+  currentAquariumId = null;
+  loadAquariums(user.uid);
 });
 
 
