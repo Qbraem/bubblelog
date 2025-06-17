@@ -176,6 +176,14 @@ const aiStatusArrow = document.getElementById('ai-status-arrow');
 const aiStatusIcon = document.getElementById('ai-status-icon');
 const aiStatusMeter = document.getElementById('ai-status-meter');
 const reminderList = document.getElementById('reminder-list');
+const noteList = document.getElementById("note-list");
+const noteForm = document.getElementById("note-form");
+const noteText = document.getElementById("note-text");
+const editModal = document.getElementById("note-edit-modal");
+const editNoteText = document.getElementById("edit-note-text");
+const editNoteSave = document.getElementById("edit-note-save");
+const editNoteCancel = document.getElementById("edit-note-cancel");
+let currentEditId = null;
 
 const testFrequencies = {
   ph: 7,
@@ -198,6 +206,7 @@ const testLabels = {
 };
 
 let chartMain = null;
+let chartNitro = null;
 
 async function loadAquariums(uid, selectId = null) {
   const snapshot = await getDocs(collection(db, `users/${uid}/aquariums`));
@@ -259,6 +268,26 @@ function updateAquariumMenuButtons(list = null) {
   });
 }
 
+if (editNoteCancel) {
+  editNoteCancel.addEventListener('click', () => {
+    editModal.classList.add('hidden');
+    currentEditId = null;
+  });
+}
+
+if (editNoteSave) {
+  editNoteSave.addEventListener('click', async () => {
+    const user = auth.currentUser;
+    if (!user || !currentAquariumId || !currentEditId) return;
+    const newText = editNoteText.value.trim();
+    if (!newText) return;
+    await setDoc(doc(db, `users/${user.uid}/aquariums/${currentAquariumId}/notes`, currentEditId), { text: newText, timestamp: new Date() });
+    editModal.classList.add('hidden');
+    currentEditId = null;
+    loadNotes(user.uid);
+  });
+}
+
 function parseNumber(value) {
   if (value === undefined || value === null) return null;
   const cleaned = String(value)
@@ -290,6 +319,17 @@ function sanitizeMeasurementData(data) {
     co2: parseNumber(data.co2),
     timestamp: data.timestamp
   };
+}
+
+function convertMarkup(text) {
+  const esc = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+  return esc
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g, '<em>$1</em>')
+    .replace(/\n/g, '<br>');
 }
 
 dataForm.addEventListener('submit', async (e) => {
@@ -399,6 +439,7 @@ function generateAdvice(ph, gh, kh, chlorine, nitrite, nitrate, co2) {
 async function loadData(uid) {
   historyList.innerHTML = '';
   if (!currentAquariumId) return;
+  loadNotes(uid);
   const q = query(collection(db, `users/${uid}/aquariums/${currentAquariumId}/measurements`), orderBy('timestamp', 'desc'));
   const querySnapshot = await getDocs(q);
 
@@ -494,31 +535,55 @@ async function loadData(uid) {
     aiStatusIcon.className = 'text-gray-500 my-3 text-4xl';
   }
 
-  updateOrCreateChart(labels, [
+  labels.reverse();
+  phData.reverse();
+  ghData.reverse();
+  khData.reverse();
+  chlorineData.reverse();
+  nitriteData.reverse();
+  nitrateData.reverse();
+  fe2Data.reverse();
+  co2Data.reverse();
+
+  chartMain = updateOrCreateChart('chart-main', chartMain, labels, [
     { label: 'pH', data: phData, color: 'rgba(59, 130, 246, 1)' },
     { label: 'GH (°dH)', data: ghData, color: 'rgba(96, 165, 250, 1)' },
     { label: 'KH (°dH)', data: khData, color: 'rgba(251, 113, 133, 1)' },
     { label: 'Chlorine (mg/L)', data: chlorineData, color: 'rgba(34, 197, 94, 1)' },
-    { label: 'Nitrite (mg/L)', data: nitriteData, color: 'rgba(234, 179, 8, 1)' },
-    { label: 'Nitrate (mg/L)', data: nitrateData, color: 'rgba(249, 115, 22, 1)' },
     { label: 'Fe2 (mg/L)', data: fe2Data, color: 'rgba(139, 92, 246, 1)' },
     { label: 'CO₂ (mg/L)', data: co2Data, color: 'rgba(16, 185, 129, 1)' }
+  ]);
+
+  chartNitro = updateOrCreateChart('chart-nox', chartNitro, labels, [
+    { label: 'Nitrite (mg/L)', data: nitriteData, color: 'rgba(234, 179, 8, 1)' },
+    { label: 'Nitrate (mg/L)', data: nitrateData, color: 'rgba(249, 115, 22, 1)' }
   ]);
 
   updateReminders(reminderData);
 }
 
-function updateOrCreateChart(labels, datasets) {
-  const ctx = document.getElementById('chart').getContext('2d');
-  let chartInstance = chartMain;
+function updateOrCreateChart(chartId, chartInstance, labels, datasets) {
+  const ctx = document.getElementById(chartId).getContext('2d');
 
   if (chartInstance) {
     chartInstance.data.labels = labels;
     datasets.forEach((ds, idx) => {
       if (chartInstance.data.datasets[idx]) {
+        chartInstance.data.datasets[idx].label = ds.label;
         chartInstance.data.datasets[idx].data = ds.data;
+        chartInstance.data.datasets[idx].borderColor = ds.color;
+        chartInstance.data.datasets[idx].backgroundColor = ds.color + '33';
+      } else {
+        chartInstance.data.datasets[idx] = {
+          label: ds.label,
+          data: ds.data,
+          borderColor: ds.color,
+          backgroundColor: ds.color + '33',
+          tension: 0.4
+        };
       }
     });
+    chartInstance.data.datasets.splice(datasets.length);
     chartInstance.update();
   } else {
     chartInstance = new Chart(ctx, {
@@ -541,8 +606,9 @@ function updateOrCreateChart(labels, datasets) {
         }
       }
     });
-    chartMain = chartInstance;
+    return chartInstance;
   }
+  return chartInstance;
 }
 
 
@@ -604,6 +670,59 @@ function updateReminders(measurements) {
     li.textContent = text;
     reminderList.appendChild(li);
   }
+}
+async function loadNotes(uid) {
+  if (!noteList) return;
+  noteList.innerHTML = "";
+  if (!currentAquariumId) return;
+  const q = query(collection(db, `users/${uid}/aquariums/${currentAquariumId}/notes`), orderBy("timestamp", "desc"));
+  const snap = await getDocs(q);
+  snap.forEach(docSnap => {
+    const data = docSnap.data();
+    const li = document.createElement("li");
+    li.className = "flex justify-between items-center py-1";
+    const span = document.createElement("span");
+    span.innerHTML = convertMarkup(data.text);
+    li.appendChild(span);
+    const actions = document.createElement("span");
+    actions.className = "flex items-center";
+    const edit = document.createElement("span");
+    edit.className = "edit-btn";
+    edit.title = "Edit note";
+    edit.textContent = "✎";
+    edit.onclick = () => {
+      currentEditId = docSnap.id;
+      editNoteText.value = data.text;
+      if (editModal) editModal.classList.remove('hidden');
+    };
+    const del = document.createElement("span");
+    del.className = "delete-btn";
+    del.title = "Delete note";
+    del.textContent = "✖";
+    del.onclick = async () => {
+      if (confirm("Delete this note?")) {
+        await deleteDoc(doc(db, `users/${uid}/aquariums/${currentAquariumId}/notes`, docSnap.id));
+        loadNotes(uid);
+      }
+    };
+    actions.appendChild(edit);
+    actions.appendChild(del);
+    li.appendChild(actions);
+    noteList.appendChild(li);
+  });
+}
+
+if (noteForm) {
+  noteForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const user = auth.currentUser;
+    if (!user || !currentAquariumId) return;
+    const text = noteText.value.trim();
+    if (!text) return;
+    await addDoc(collection(db, `users/${user.uid}/aquariums/${currentAquariumId}/notes`), { text, timestamp: new Date() });
+    noteText.value = "";
+    loadNotes(user.uid);
+  });
 }
 
 

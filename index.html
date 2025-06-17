@@ -221,8 +221,21 @@
       margin-left: 8px;
       user-select: none;
     }
+    .edit-btn {
+      cursor: pointer;
+      color: #1e40af;
+      margin-left: 4px;
+      user-select: none;
+    }
+    .edit-btn:hover {
+      color: #1e3a8a;
+    }
     .delete-btn:hover {
       color: #b91c1c;
+    }
+
+    .note-save-btn {
+      height: 2.25rem;
     }
 
     button#auth-submit,
@@ -530,7 +543,8 @@
       <div id="result" class="text-center text-sm text-blue-800 mb-2"></div>
 
       <div id="charts" class="max-w-xl mx-auto mb-6">
-        <canvas id="chart" class="w-full" style="min-height:250px;"></canvas>
+        <canvas id="chart-main" class="w-full mb-4" style="min-height:250px;"></canvas>
+        <canvas id="chart-nox" class="w-full" style="min-height:250px;"></canvas>
       </div>
 
       <div id="ai-advice-box" class="max-w-xl mx-auto mt-4 p-6 rounded-2xl shadow-2xl text-gray-900 text-center bg-white bg-opacity-70 backdrop-filter backdrop-blur-md disabled" aria-disabled="true" tabindex="-1" style="transition:background-color 0.3s">
@@ -555,6 +569,23 @@
           <input type="date" id="filter-date" class="rounded-lg border border-blue-300 px-3 py-2 w-full text-sm" />
         </div>
       </div>
+        <div id="notes-container" class="bg-blue-50 rounded-xl p-4 text-sm text-blue-900 mt-6 max-w-xl mx-auto">
+          <h3 class="text-lg font-semibold mb-2 text-blue-800">Notes</h3>
+          <ul id="note-list" class="divide-y divide-blue-200 mb-2"></ul>
+          <form id="note-form" class="flex gap-2 mt-2">
+            <textarea id="note-text" rows="3" class="flex-grow border rounded-lg px-2 py-1 text-sm" placeholder="Add a note"></textarea>
+            <button type="submit" class="px-3 py-1 bg-blue-200 rounded-full text-blue-800 hover:bg-blue-300">Save</button>
+          </form>
+          <div id="note-edit-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center" style="z-index:10000;">
+            <div class="bg-white p-4 rounded-lg w-80">
+              <textarea id="edit-note-text" rows="4" class="w-full border rounded mb-2 p-2 text-sm"></textarea>
+              <div class="flex justify-end gap-2">
+                <button id="edit-note-cancel" type="button" class="px-3 py-1 bg-gray-200 rounded-full">Cancel</button>
+                <button id="edit-note-save" type="button" class="px-3 py-1 bg-blue-200 rounded-full text-blue-800 hover:bg-blue-300">Save</button>
+              </div>
+            </div>
+          </div>
+        </div>
 
 
       <div id="detail-view" class="mt-6 hidden bg-white p-4 rounded-xl shadow text-sm text-gray-900 max-w-xl mx-auto">
@@ -569,7 +600,7 @@
 
   <footer class="glass text-white">
     Indie app developed in Belgium by <span class="text-white">Quinten Braem</span>, with a little help from AI.<br />
-    <small class="text-white">V1.1</small>
+    <small class="text-white">Béta V1.1</small>
   </footer>
 
   <script type="module" src="app.js"></script>
